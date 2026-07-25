@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
-import { Users, FileText, CheckCircle, ShieldAlert, UserPlus, Database, Trash2, Edit3, X } from 'lucide-react'
+import { Users, FileText, CheckCircle, ShieldAlert, UserPlus, Database, Trash2, Edit3, X, Key } from 'lucide-react'
 
 // Supabase configuration
 const supabaseUrl = 'https://wabwjiwvtscppensgxrv.supabase.co'
@@ -14,6 +14,9 @@ function App() {
   
   const [loading, setLoading] = useState(true)
   const [editingUserId, setEditingUserId] = useState(null)
+  
+  // State for tracking the selected user ID for each reset request
+  const [resetSelections, setResetSelections] = useState({})
   
   const [formData, setFormData] = useState({
     fullName: '',
@@ -44,6 +47,20 @@ function App() {
 
     setLoading(false)
   }
+
+  // Pre-populate selections for reset requests based on closest match
+  useEffect(() => {
+    if (users.length > 0 && resets.length > 0) {
+      const initialSelections = {}
+      resets.forEach(r => {
+        const sorted = getSortedUsers(r.username)
+        if (sorted.length > 0) {
+          initialSelections[r.id] = sorted[0].id
+        }
+      })
+      setResetSelections(prev => ({ ...initialSelections, ...prev }))
+    }
+  }, [users, resets])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -114,6 +131,32 @@ function App() {
     fetchData()
   }
 
+  const getSortedUsers = (reqUsername) => {
+    const req = (reqUsername || '').toLowerCase()
+    return [...users].sort((a, b) => {
+       const aExact = a.username.toLowerCase() === req
+       const bExact = b.username.toLowerCase() === req
+       if (aExact && !bExact) return -1
+       if (!aExact && bExact) return 1
+       
+       const aMatch = a.username.toLowerCase().includes(req)
+       const bMatch = b.username.toLowerCase().includes(req)
+       if (aMatch && !bMatch) return -1
+       if (!aMatch && bMatch) return 1
+       return 0
+    })
+  }
+
+  const handleResetAction = (resetReq) => {
+    const targetUserId = resetSelections[resetReq.id]
+    if (!targetUserId) return
+    const targetUser = users.find(u => u.id === targetUserId)
+    if (targetUser) {
+      handleEditClick(targetUser)
+      deleteResetRequest(resetReq.id)
+    }
+  }
+
   return (
     <div className="container">
       <header className="header">
@@ -176,7 +219,7 @@ function App() {
             </div>
             <div className="form-group">
               <label>Şifre</label>
-              <input type="text" name="password" value={formData.password} onChange={handleInputChange} className="form-control" required />
+              <input type="text" name="password" value={formData.password} onChange={handleInputChange} className="form-control" required style={{ borderColor: editingUserId ? 'var(--status-warning)' : 'inherit' }} />
             </div>
             <div className="form-group">
               <label>Rol</label>
@@ -202,6 +245,52 @@ function App() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          
+          <div className="card">
+            <h2>Şifre Sıfırlama Talepleri</h2>
+            {loading ? <p>Yükleniyor...</p> : (
+              <div>
+                {resets.length === 0 ? <p style={{ color: 'var(--text-secondary)' }}>Talep bulunmuyor.</p> : (
+                  resets.map(r => (
+                    <div key={r.id} className="list-item" style={{ borderLeft: '4px solid var(--status-warning)', paddingLeft: '1rem', marginBottom: '1rem', background: 'rgba(255, 171, 0, 0.05)', borderRadius: '12px', padding: '1rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: '1.1rem', color: 'var(--status-warning)' }}>Talep: @{r.username}</div>
+                          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.4rem' }}>
+                            Mesaj: <span style={{ color: 'var(--text-primary)' }}>{r.message || 'Belirtilmedi'}</span>
+                          </div>
+                        </div>
+                        <button className="btn btn-danger" style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--text-secondary)', borderColor: 'transparent', padding: '0.5rem' }} onClick={() => deleteResetRequest(r.id)} title="Talebi Sil">
+                          <X size={16} />
+                        </button>
+                      </div>
+                      
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <select 
+                          className="form-control" 
+                          style={{ flex: 1, padding: '0.5rem' }}
+                          value={resetSelections[r.id] || ''}
+                          onChange={(e) => setResetSelections(prev => ({ ...prev, [r.id]: e.target.value }))}
+                        >
+                          <option value="">Hedef Kullanıcı Seçin...</option>
+                          {getSortedUsers(r.username).map(u => (
+                            <option key={u.id} value={u.id}>
+                              @{u.username} ({u.full_name})
+                            </option>
+                          ))}
+                        </select>
+                        
+                        <button className="btn" style={{ width: 'auto', padding: '0.5rem 1rem', background: 'rgba(124, 77, 255, 0.2)', color: 'var(--accent-purple)' }} onClick={() => handleResetAction(r)}>
+                          <Key size={16} /> Seçileni Sıfırla
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="card">
             <h2>Kayıtlı Kullanıcılar</h2>
             {loading ? <p>Yükleniyor...</p> : (
@@ -276,29 +365,6 @@ function App() {
               </div>
             )}
           </div>
-        </div>
-        
-        <div className="card">
-          <h2>Şifre Sıfırlama Talepleri</h2>
-          {loading ? <p>Yükleniyor...</p> : (
-            <div>
-              {resets.length === 0 ? <p style={{ color: 'var(--text-secondary)' }}>Talep bulunmuyor.</p> : (
-                resets.map(r => (
-                  <div key={r.id} className="list-item flex-between" style={{ borderLeft: '4px solid var(--status-warning)', paddingLeft: '1rem' }}>
-                    <div>
-                      <div style={{ fontWeight: 600 }}>@{r.username}</div>
-                      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
-                        Mesaj: <span style={{ color: 'var(--text-primary)' }}>{r.message || 'Belirtilmedi'}</span>
-                      </div>
-                    </div>
-                    <button className="btn btn-danger" style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--text-secondary)', borderColor: 'transparent', padding: '0.5rem' }} onClick={() => deleteResetRequest(r.id)}>
-                      <CheckCircle size={16} />
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
         </div>
       </div>
     </div>
