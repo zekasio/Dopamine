@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
-import { Users, FileText, CheckCircle, ShieldAlert, UserPlus, Database, Trash2 } from 'lucide-react'
+import { Users, FileText, CheckCircle, ShieldAlert, UserPlus, Database, Trash2, Edit3, X } from 'lucide-react'
 
 // Supabase configuration
 const supabaseUrl = 'https://wabwjiwvtscppensgxrv.supabase.co'
@@ -13,6 +13,8 @@ function App() {
   const [resets, setResets] = useState([])
   
   const [loading, setLoading] = useState(true)
+  const [editingUserId, setEditingUserId] = useState(null)
+  
   const [formData, setFormData] = useState({
     fullName: '',
     username: '',
@@ -48,11 +50,27 @@ function App() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleAddUser = async (e) => {
+  const handleEditClick = (user) => {
+    setEditingUserId(user.id)
+    setFormData({
+      fullName: user.full_name,
+      username: user.username,
+      password: user.password,
+      district: user.district || '',
+      isModerator: user.is_moderator ? 'true' : 'false'
+    })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const cancelEdit = () => {
+    setEditingUserId(null)
+    setFormData({ fullName: '', username: '', password: '123', district: '', isModerator: 'false' })
+  }
+
+  const handleSaveUser = async (e) => {
     e.preventDefault()
     
-    const newUser = {
-      id: 'user_' + formData.username + '_' + Math.floor(Math.random() * 1000),
+    const userData = {
       full_name: formData.fullName,
       username: formData.username.toLowerCase(),
       password: formData.password,
@@ -60,19 +78,32 @@ function App() {
       is_moderator: formData.isModerator === 'true'
     }
 
-    const { error } = await supabase.from('users').insert([newUser])
-    
-    if (error) {
-      alert('Hata: ' + error.message)
+    if (editingUserId) {
+      // Update existing user
+      const { error } = await supabase.from('users').update(userData).eq('id', editingUserId)
+      if (error) {
+        alert('Hata: ' + error.message)
+      } else {
+        alert('Kullanıcı başarıyla güncellendi! ✨')
+        cancelEdit()
+        fetchData()
+      }
     } else {
-      alert('Kullanıcı başarıyla eklendi! ✨')
-      setFormData({ fullName: '', username: '', password: '123', district: '', isModerator: 'false' })
-      fetchData()
+      // Add new user
+      userData.id = 'user_' + formData.username + '_' + Math.floor(Math.random() * 1000)
+      const { error } = await supabase.from('users').insert([userData])
+      if (error) {
+        alert('Hata: ' + error.message)
+      } else {
+        alert('Kullanıcı başarıyla eklendi! ✨')
+        cancelEdit()
+        fetchData()
+      }
     }
   }
 
   const deleteUser = async (id) => {
-    if (confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')) {
+    if (confirm('Bu kullanıcıyı silmek istediğinize emin misiniz? (Bu işlem geri alınamaz)')) {
       await supabase.from('users').delete().eq('id', id)
       fetchData()
     }
@@ -121,17 +152,18 @@ function App() {
 
       <div className="main-grid">
         <div className="card h-fit">
-          <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <UserPlus size={20} /> Kullanıcı Ekle
+          <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: editingUserId ? 'var(--status-warning)' : 'inherit' }}>
+            {editingUserId ? <Edit3 size={20} /> : <UserPlus size={20} />} 
+            {editingUserId ? 'Kullanıcıyı Düzenle' : 'Kullanıcı Ekle'}
           </h2>
-          <form onSubmit={handleAddUser}>
+          <form onSubmit={handleSaveUser}>
             <div className="form-group">
               <label>Ad Soyad</label>
               <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} className="form-control" placeholder="Örn: Ayşe Yılmaz" required />
             </div>
             <div className="form-group">
               <label>Kullanıcı Adı</label>
-              <input type="text" name="username" value={formData.username} onChange={handleInputChange} className="form-control" placeholder="Örn: ayse" required />
+              <input type="text" name="username" value={formData.username} onChange={handleInputChange} className="form-control" placeholder="Örn: ayse" required disabled={!!editingUserId} style={{ opacity: editingUserId ? 0.6 : 1 }} />
             </div>
             <div className="form-group">
               <label>İlçe</label>
@@ -148,9 +180,19 @@ function App() {
                 <option value="true">Moderatör (Admin)</option>
               </select>
             </div>
-            <button type="submit" className="btn">
-              <UserPlus size={18} /> Ekle & Kaydet
-            </button>
+            
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+              <button type="submit" className="btn" style={{ flex: 1 }}>
+                {editingUserId ? <Edit3 size={18} /> : <UserPlus size={18} />} 
+                {editingUserId ? 'Güncelle' : 'Ekle & Kaydet'}
+              </button>
+              
+              {editingUserId && (
+                <button type="button" onClick={cancelEdit} className="btn" style={{ flex: 1, background: 'rgba(255,255,255,0.1)' }}>
+                  <X size={18} /> İptal
+                </button>
+              )}
+            </div>
           </form>
         </div>
 
@@ -166,7 +208,7 @@ function App() {
                       <th>İlçe</th>
                       <th>Şifre</th>
                       <th>Rol</th>
-                      <th>İşlem</th>
+                      <th style={{ textAlign: 'right' }}>İşlemler</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -183,10 +225,15 @@ function App() {
                             {u.is_moderator ? 'Moderatör' : 'Kullanıcı'}
                           </span>
                         </td>
-                        <td>
-                          <button className="btn btn-danger" onClick={() => deleteUser(u.id)}>
-                            <Trash2 size={14} /> Sil
-                          </button>
+                        <td style={{ textAlign: 'right' }}>
+                          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                            <button className="btn btn-danger" style={{ background: 'rgba(255,171,0,0.15)', color: 'var(--status-warning)', borderColor: 'rgba(255,171,0,0.3)' }} onClick={() => handleEditClick(u)}>
+                              <Edit3 size={14} /> Düzenle
+                            </button>
+                            <button className="btn btn-danger" onClick={() => deleteUser(u.id)}>
+                              <Trash2 size={14} /> Sil
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
