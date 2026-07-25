@@ -1,11 +1,37 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Users, FileText, CheckCircle, ShieldAlert, UserPlus, Database, Trash2, Edit3, X, Key } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 // Supabase configuration
 const supabaseUrl = 'https://wabwjiwvtscppensgxrv.supabase.co'
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhYndqaXd2dHNjcHBlbnNneHJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUwMDMyOTUsImV4cCI6MjEwMDU3OTI5NX0.M-mRVaacAWnPxhS-3esVq91eiYwB53WhH_rWBtvK9JI'
 const supabase = createClient(supabaseUrl, supabaseKey)
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+}
+
+const cardVariants = {
+  hidden: { opacity: 0, scale: 0.95, y: 20 },
+  show: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+}
+
+const listAnim = {
+  initial: { opacity: 0, height: 0, scale: 0.95 },
+  animate: { opacity: 1, height: 'auto', scale: 1, transition: { type: 'spring', stiffness: 300, damping: 24 } },
+  exit: { opacity: 0, height: 0, scale: 0.9, transition: { duration: 0.2 } }
+}
 
 function App() {
   const [users, setUsers] = useState([])
@@ -101,7 +127,6 @@ function App() {
       if (error) {
         alert('Hata: ' + error.message)
       } else {
-        alert('Kullanıcı başarıyla güncellendi! ✨')
         cancelEdit()
         fetchData()
       }
@@ -112,7 +137,6 @@ function App() {
       if (error) {
         alert('Hata: ' + error.message)
       } else {
-        alert('Kullanıcı başarıyla eklendi! ✨')
         cancelEdit()
         fetchData()
       }
@@ -121,14 +145,16 @@ function App() {
 
   const deleteUser = async (id) => {
     if (confirm('Bu kullanıcıyı silmek istediğinize emin misiniz? (Bu işlem geri alınamaz)')) {
+      // Optimistic UI update
+      setUsers(prev => prev.filter(u => u.id !== id))
       await supabase.from('users').delete().eq('id', id)
-      fetchData()
     }
   }
 
   const deleteResetRequest = async (id) => {
+    // Optimistic UI update for smooth animation
+    setResets(prev => prev.filter(r => r.id !== id))
     await supabase.from('password_resets').delete().eq('id', id)
-    fetchData()
   }
 
   const getSortedUsers = (reqUsername) => {
@@ -159,7 +185,7 @@ function App() {
 
   return (
     <div className="container">
-      <header className="header">
+      <motion.header className="header" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: "easeOut" }}>
         <div>
           <h1>Dopamine Yönetim</h1>
           <p>Merkezi Sistem ve Kullanıcı Kontrol Paneli</p>
@@ -169,41 +195,52 @@ function App() {
           <Database size={16} />
           Supabase Bağlı
         </div>
-      </header>
+      </motion.header>
 
-      <div className="stats-grid">
-        <div className="card">
+      <motion.div className="stats-grid" variants={containerVariants} initial="hidden" animate="show">
+        <motion.div className="card" variants={itemVariants}>
           <p style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase' }}>
             <Users size={16} /> Kullanıcılar
           </p>
           <h3>{users.length}</h3>
-        </div>
-        <div className="card">
+        </motion.div>
+        <motion.div className="card" variants={itemVariants}>
           <p style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase' }}>
             <FileText size={16} color="var(--primary-blue)" /> Raporlar
           </p>
           <h3 style={{ color: 'var(--primary-blue)' }}>{reports.length}</h3>
-        </div>
-        <div className="card">
+        </motion.div>
+        <motion.div className="card" variants={itemVariants}>
           <p style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase' }}>
             <CheckCircle size={16} color="var(--status-success)" /> Onaylanan
           </p>
           <h3 style={{ color: 'var(--status-success)' }}>{reports.filter(r => r.status === 'APPROVED').length}</h3>
-        </div>
-        <div className="card">
+        </motion.div>
+        <motion.div className="card" variants={itemVariants}>
           <p style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase' }}>
             <ShieldAlert size={16} color="var(--status-warning)" /> Şifre Sıfırlama
           </p>
           <h3 style={{ color: 'var(--status-warning)' }}>{resets.length}</h3>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
-      <div className="main-grid">
-        <div className="card h-fit">
-          <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: editingUserId ? 'var(--status-warning)' : 'inherit' }}>
-            {editingUserId ? <Edit3 size={20} /> : <UserPlus size={20} />} 
-            {editingUserId ? 'Kullanıcıyı Düzenle' : 'Kullanıcı Ekle'}
-          </h2>
+      <motion.div className="main-grid" variants={containerVariants} initial="hidden" animate="show">
+        
+        {/* LEFT COLUMN: ADD / EDIT FORM */}
+        <motion.div className="card h-fit" variants={cardVariants} layout>
+          <AnimatePresence mode="wait">
+            <motion.h2 
+              key={editingUserId ? 'edit' : 'add'}
+              initial={{ opacity: 0, y: -10 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              exit={{ opacity: 0, y: 10 }}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: editingUserId ? 'var(--status-warning)' : 'inherit' }}
+            >
+              {editingUserId ? <Edit3 size={20} /> : <UserPlus size={20} />} 
+              {editingUserId ? 'Kullanıcıyı Düzenle' : 'Kullanıcı Ekle'}
+            </motion.h2>
+          </AnimatePresence>
+          
           <form onSubmit={handleSaveUser}>
             <div className="form-group">
               <label>Ad Soyad</label>
@@ -230,29 +267,50 @@ function App() {
             </div>
             
             <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
-              <button type="submit" className="btn" style={{ flex: 1 }}>
+              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="submit" className="btn" style={{ flex: 1 }}>
                 {editingUserId ? <Edit3 size={18} /> : <UserPlus size={18} />} 
                 {editingUserId ? 'Güncelle' : 'Ekle & Kaydet'}
-              </button>
+              </motion.button>
               
-              {editingUserId && (
-                <button type="button" onClick={cancelEdit} className="btn" style={{ flex: 1, background: 'rgba(255,255,255,0.1)' }}>
-                  <X size={18} /> İptal
-                </button>
-              )}
+              <AnimatePresence>
+                {editingUserId && (
+                  <motion.button 
+                    initial={{ opacity: 0, width: 0, padding: 0 }}
+                    animate={{ opacity: 1, width: 'auto', padding: '1rem' }}
+                    exit={{ opacity: 0, width: 0, padding: 0 }}
+                    type="button" onClick={cancelEdit} className="btn" style={{ background: 'rgba(255,255,255,0.1)' }}>
+                    <X size={18} /> İptal
+                  </motion.button>
+                )}
+              </AnimatePresence>
             </div>
           </form>
-        </div>
+        </motion.div>
 
+        {/* RIGHT COLUMN: LISTS */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
-          <div className="card">
+          <motion.div className="card" variants={cardVariants} layout>
             <h2>Şifre Sıfırlama Talepleri</h2>
-            {loading ? <p>Yükleniyor...</p> : (
+            {loading && resets.length === 0 ? <p>Yükleniyor...</p> : (
               <div>
-                {resets.length === 0 ? <p style={{ color: 'var(--text-secondary)' }}>Talep bulunmuyor.</p> : (
-                  resets.map(r => (
-                    <div key={r.id} className="list-item" style={{ borderLeft: '4px solid var(--status-warning)', paddingLeft: '1rem', marginBottom: '1rem', background: 'rgba(255, 171, 0, 0.05)', borderRadius: '12px', padding: '1rem' }}>
+                <AnimatePresence>
+                  {resets.length === 0 && (
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ color: 'var(--text-secondary)' }}>
+                      Talep bulunmuyor.
+                    </motion.p>
+                  )}
+                  {resets.map(r => (
+                    <motion.div 
+                      layout
+                      variants={listAnim}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      key={r.id} 
+                      className="list-item" 
+                      style={{ borderLeft: '4px solid var(--status-warning)', paddingLeft: '1.5rem', marginBottom: '1rem', background: 'rgba(255, 171, 0, 0.05)', borderRadius: '16px', padding: '1.25rem' }}
+                    >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                         <div>
                           <div style={{ fontWeight: 600, fontSize: '1.1rem', color: 'var(--status-warning)' }}>Talep: @{r.username}</div>
@@ -260,15 +318,22 @@ function App() {
                             Mesaj: <span style={{ color: 'var(--text-primary)' }}>{r.message || 'Belirtilmedi'}</span>
                           </div>
                         </div>
-                        <button className="btn btn-danger" style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--text-secondary)', borderColor: 'transparent', padding: '0.5rem' }} onClick={() => deleteResetRequest(r.id)} title="Talebi Sil">
+                        <motion.button 
+                          whileHover={{ scale: 1.1, rotate: 90 }} 
+                          whileTap={{ scale: 0.9 }}
+                          className="btn btn-danger" 
+                          style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', borderColor: 'transparent', padding: '0.5rem', borderRadius: '50%' }} 
+                          onClick={() => deleteResetRequest(r.id)} 
+                          title="Talebi Sil"
+                        >
                           <X size={16} />
-                        </button>
+                        </motion.button>
                       </div>
                       
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         <select 
                           className="form-control" 
-                          style={{ flex: 1, padding: '0.5rem' }}
+                          style={{ flex: 1, padding: '0.75rem' }}
                           value={resetSelections[r.id] || ''}
                           onChange={(e) => setResetSelections(prev => ({ ...prev, [r.id]: e.target.value }))}
                         >
@@ -280,22 +345,28 @@ function App() {
                           ))}
                         </select>
                         
-                        <button className="btn" style={{ width: 'auto', padding: '0.5rem 1rem', background: 'rgba(124, 77, 255, 0.2)', color: 'var(--accent-purple)' }} onClick={() => handleResetAction(r)}>
+                        <motion.button 
+                          whileHover={{ scale: 1.05 }} 
+                          whileTap={{ scale: 0.95 }}
+                          className="btn" 
+                          style={{ width: 'auto', padding: '0.75rem 1.25rem', background: 'rgba(124, 77, 255, 0.2)', color: 'var(--accent-purple)', border: '1px solid rgba(124, 77, 255, 0.3)' }} 
+                          onClick={() => handleResetAction(r)}
+                        >
                           <Key size={16} /> Seçileni Sıfırla
-                        </button>
+                        </motion.button>
                       </div>
-                    </div>
-                  ))
-                )}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
             )}
-          </div>
+          </motion.div>
 
-          <div className="card">
+          <motion.div className="card" variants={cardVariants} layout>
             <h2>Kayıtlı Kullanıcılar</h2>
-            {loading ? <p>Yükleniyor...</p> : (
+            {loading && users.length === 0 ? <p>Yükleniyor...</p> : (
               <div className="table-container">
-                <table>
+                <table style={{ width: '100%' }}>
                   <thead>
                     <tr>
                       <th>Kullanıcı</th>
@@ -306,45 +377,74 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map(u => (
-                      <tr key={u.id}>
-                        <td>
-                          <div style={{ fontWeight: 600 }}>{u.full_name}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>@{u.username}</div>
-                        </td>
-                        <td style={{ color: 'var(--primary-blue)', fontWeight: 500 }}>{u.district || '-'}</td>
-                        <td style={{ color: 'var(--status-warning)', fontFamily: 'monospace' }}>{u.password}</td>
-                        <td>
-                          <span className={`badge ${u.is_moderator ? 'badge-admin' : 'badge-user'}`}>
-                            {u.is_moderator ? 'Moderatör' : 'Kullanıcı'}
-                          </span>
-                        </td>
-                        <td style={{ textAlign: 'right' }}>
-                          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                            <button className="btn btn-danger" style={{ background: 'rgba(255,171,0,0.15)', color: 'var(--status-warning)', borderColor: 'rgba(255,171,0,0.3)' }} onClick={() => handleEditClick(u)}>
-                              <Edit3 size={14} /> Düzenle
-                            </button>
-                            <button className="btn btn-danger" onClick={() => deleteUser(u.id)}>
-                              <Trash2 size={14} /> Sil
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                    <AnimatePresence>
+                      {users.map(u => (
+                        <motion.tr 
+                          key={u.id} 
+                          layout 
+                          initial={{ opacity: 0, y: 10 }} 
+                          animate={{ opacity: 1, y: 0 }} 
+                          exit={{ opacity: 0, scale: 0.95, x: -20, transition: { duration: 0.2 } }}
+                        >
+                          <td>
+                            <div style={{ fontWeight: 600 }}>{u.full_name}</div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>@{u.username}</div>
+                          </td>
+                          <td style={{ color: 'var(--primary-blue)', fontWeight: 500 }}>{u.district || '-'}</td>
+                          <td style={{ color: 'var(--status-warning)', fontFamily: 'monospace' }}>{u.password}</td>
+                          <td>
+                            <span className={`badge ${u.is_moderator ? 'badge-admin' : 'badge-user'}`}>
+                              {u.is_moderator ? 'Moderatör' : 'Kullanıcı'}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                              <motion.button 
+                                whileHover={{ scale: 1.05 }} 
+                                whileTap={{ scale: 0.95 }}
+                                className="btn btn-danger" 
+                                style={{ background: 'rgba(255,171,0,0.15)', color: 'var(--status-warning)', borderColor: 'rgba(255,171,0,0.3)', borderRadius: '10px' }} 
+                                onClick={() => handleEditClick(u)}
+                              >
+                                <Edit3 size={14} /> Düzenle
+                              </motion.button>
+                              <motion.button 
+                                whileHover={{ scale: 1.05 }} 
+                                whileTap={{ scale: 0.95 }}
+                                className="btn btn-danger" 
+                                style={{ borderRadius: '10px' }}
+                                onClick={() => deleteUser(u.id)}
+                              >
+                                <Trash2 size={14} /> Sil
+                              </motion.button>
+                            </div>
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </AnimatePresence>
                   </tbody>
                 </table>
                 {users.length === 0 && <p style={{ padding: '1rem', textAlign: 'center' }}>Henüz kullanıcı yok.</p>}
               </div>
             )}
-          </div>
+          </motion.div>
           
-          <div className="card">
+          <motion.div className="card" variants={cardVariants} layout>
             <h2>Gelen Raporlar</h2>
-            {loading ? <p>Yükleniyor...</p> : (
+            {loading && reports.length === 0 ? <p>Yükleniyor...</p> : (
               <div>
-                {reports.length === 0 ? <p>Rapor bulunmuyor.</p> : (
-                  reports.map(r => (
-                    <div key={r.id} className="list-item flex-between">
+                <AnimatePresence>
+                  {reports.length === 0 && (
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>Rapor bulunmuyor.</motion.p>
+                  )}
+                  {reports.map(r => (
+                    <motion.div 
+                      key={r.id} 
+                      layout
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="list-item flex-between"
+                    >
                       <div>
                         <div style={{ fontWeight: 600 }}>{r.user_full_name} (@{r.username})</div>
                         <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
@@ -359,14 +459,15 @@ function App() {
                           {r.status}
                         </span>
                       </div>
-                    </div>
-                  ))
-                )}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
             )}
-          </div>
+          </motion.div>
+
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }
