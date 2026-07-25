@@ -109,6 +109,11 @@ function App() {
     }
   }
 
+  const deleteResetRequest = async (id) => {
+    await supabase.from('password_resets').delete().eq('id', id)
+    fetchData()
+  }
+
   return (
     <div className="container">
       <header className="header">
@@ -271,6 +276,29 @@ function App() {
               </div>
             )}
           </div>
+        </div>
+        
+        <div className="card">
+          <h2>Şifre Sıfırlama Talepleri</h2>
+          {loading ? <p>Yükleniyor...</p> : (
+            <div>
+              {resets.length === 0 ? <p style={{ color: 'var(--text-secondary)' }}>Talep bulunmuyor.</p> : (
+                resets.map(r => (
+                  <div key={r.id} className="list-item flex-between" style={{ borderLeft: '4px solid var(--status-warning)', paddingLeft: '1rem' }}>
+                    <div>
+                      <div style={{ fontWeight: 600 }}>@{r.username}</div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                        Mesaj: <span style={{ color: 'var(--text-primary)' }}>{r.message || 'Belirtilmedi'}</span>
+                      </div>
+                    </div>
+                    <button className="btn btn-danger" style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--text-secondary)', borderColor: 'transparent', padding: '0.5rem' }} onClick={() => deleteResetRequest(r.id)}>
+                      <CheckCircle size={16} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
