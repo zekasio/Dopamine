@@ -144,9 +144,17 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
         ) {
             // Filter out moderators - they don't submit reports!
             val normalUsers = users.filter { !it.isModerator }
+            
+            // Sadece bu haftanın raporlarını göster
+            val currentWeekReports = reports.filter {
+                val reportCal = java.util.Calendar.getInstance().apply { timeInMillis = it.submissionTimestamp }
+                val currentCal = java.util.Calendar.getInstance()
+                reportCal.get(java.util.Calendar.YEAR) == currentCal.get(java.util.Calendar.YEAR) &&
+                reportCal.get(java.util.Calendar.WEEK_OF_YEAR) == currentCal.get(java.util.Calendar.WEEK_OF_YEAR)
+            }
 
             SegmentedControl(
-                items = listOf("Gelen Raporlar (${reports.size})", "Dürtme Listesi (${normalUsers.size})"),
+                items = listOf("Gelen Raporlar (${currentWeekReports.size})", "Dürtme Listesi (${normalUsers.size})"),
                 selectedIndex = selectedTab,
                 onSegmentSelected = { selectedTab = it }
             )
@@ -155,13 +163,13 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
 
             if (selectedTab == 0) {
                 // Tab 1: Submitted Reports
-                if (reports.isEmpty()) {
+                if (currentWeekReports.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Henüz gönderilmiş rapor bulunmuyor.",
+                            text = "Bu hafta için henüz gönderilmiş rapor bulunmuyor.",
                             color = Color.Gray,
                             fontSize = 15.sp
                         )
@@ -173,7 +181,7 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
                             .verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        reports.forEach { report ->
+                        currentWeekReports.forEach { report ->
                             ReportItemCard(
                                 report = report,
                                 onApprove = { viewModel.approveReport(report.id) },
@@ -191,7 +199,7 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     normalUsers.forEach { user ->
-                        val submittedReport = reports.find { it.userId == user.id }
+                        val submittedReport = currentWeekReports.find { it.userId == user.id }
                         val isSubmitted = submittedReport != null && submittedReport.status != ReportStatus.REJECTED
 
                         IosCard(
