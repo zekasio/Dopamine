@@ -82,9 +82,9 @@ class AppNotificationManager(private val context: Context) {
         )
     }
 
-    fun sendWednesdayReminder(username: String, hour: Int) {
-        val title = if (hour == 18) "⏰ Bu haftalık Raporu Doldurun ($username)" else "⏰ Lütfen Bugün ki raporu Doldurun"
-        val body = "Çarşamba saat $hour:00! Lütfen haftalık saha çalışması verilerinizi girin."
+    fun sendSundayReminder(username: String, hour: Int) {
+        val title = if (hour == 18) "⏰ Bu haftalık Raporu Doldurun ($username)" else "⏰ Lütfen Bugunki raporu Doldurun"
+        val body = "Pazar saat $hour:00 (Son Gün)! Lütfen haftalık saha çalışması verilerinizi girmeyi unutmayın."
         sendNotification(title = title, message = body)
     }
 }

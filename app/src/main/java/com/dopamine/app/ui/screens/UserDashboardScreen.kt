@@ -77,9 +77,9 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
     var logoGifts by remember(userReport) { mutableIntStateOf(userReport?.logoGiftsCount ?: 0) }
     var fieldParticipants by remember(userReport) { mutableStateOf(userReport?.fieldWorkParticipants ?: "") }
 
-    // Check system Wednesday time
+    // Check system Sunday time
     val cal = Calendar.getInstance()
-    val isWednesday = cal.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY
+    val isSunday = cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
     val currentHour = cal.get(Calendar.HOUR_OF_DAY)
 
     Column(
@@ -165,8 +165,8 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Wednesday Scheduled Reminder Banner
-            if (isWednesday && (userReport == null || userReport.status == ReportStatus.REJECTED)) {
+            // Sunday Scheduled Reminder Banner
+            if (isSunday && (userReport == null || userReport.status == ReportStatus.REJECTED)) {
                 val bannerMessage = if (currentHour >= 21) {
                     "Lütfen Bugün ki raporu Doldurun"
                 } else if (currentHour >= 18) {
@@ -193,7 +193,7 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = "Çarşamba Hatırlatması",
+                                    text = "Pazar Hatırlatması (Son Gün)",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp,
                                     color = StatusWarning
