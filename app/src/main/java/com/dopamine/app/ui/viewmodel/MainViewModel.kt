@@ -119,12 +119,16 @@ class MainViewModel(
                 loginError.value = null
                 toastMessage.value = "Hoş geldiniz, ${authenticatedUser.fullName} ✨"
 
-                // Sunday Check
+                // Reminders
                 val cal = Calendar.getInstance()
-                if (!authenticatedUser.isModerator && cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
-                    val hour = cal.get(Calendar.HOUR_OF_DAY)
-                    if (hour in 18..23) {
-                        notificationManager.sendSundayReminder(authenticatedUser.username, if (hour >= 21) 21 else 18)
+                val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
+                val hour = cal.get(Calendar.HOUR_OF_DAY)
+                
+                if (!authenticatedUser.isModerator) {
+                    if (dayOfWeek == Calendar.WEDNESDAY && hour in 21..23) {
+                        notificationManager.sendReminder(authenticatedUser.username, Calendar.WEDNESDAY, hour)
+                    } else if (dayOfWeek == Calendar.SUNDAY && hour in 12..23) {
+                        notificationManager.sendReminder(authenticatedUser.username, Calendar.SUNDAY, hour)
                     }
                 }
             } else {

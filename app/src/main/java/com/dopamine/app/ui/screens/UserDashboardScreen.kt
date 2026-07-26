@@ -77,9 +77,10 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
     var logoGifts by remember(userReport) { mutableIntStateOf(userReport?.logoGiftsCount ?: 0) }
     var fieldParticipants by remember(userReport) { mutableStateOf(userReport?.fieldWorkParticipants ?: "") }
 
-    // Check system Sunday time
+    // Check system time
     val cal = Calendar.getInstance()
     val isSunday = cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
+    val isWednesday = cal.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY
     val currentHour = cal.get(Calendar.HOUR_OF_DAY)
 
     Column(
@@ -165,15 +166,15 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Sunday Scheduled Reminder Banner
-            if (isSunday && (userReport == null || userReport.status == ReportStatus.REJECTED)) {
-                val bannerMessage = if (currentHour >= 21) {
-                    "Lütfen Bugün ki raporu Doldurun"
-                } else if (currentHour >= 18) {
-                    "Bu haftalık Raporu Doldurun (${user?.username})"
-                } else null
+            // Scheduled Reminder Banners
+            val showWednesdayBanner = isWednesday && currentHour >= 21
+            val showSundayBanner = isSunday && currentHour >= 12
 
-                if (bannerMessage != null) {
+            if ((showWednesdayBanner || showSundayBanner) && (userReport == null || userReport.status == ReportStatus.REJECTED)) {
+                val bannerTitle = if (showSundayBanner) "Pazar Hatırlatması" else "Çarşamba Hatırlatması"
+                val bannerMessage = "Raporunuzu Teslim Edin"
+
+                if (true) {
                     IosCard(
                         modifier = Modifier.fillMaxWidth(),
                         backgroundColor = StatusWarning.copy(alpha = 0.12f),
@@ -193,7 +194,7 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = "Pazar Hatırlatması (Son Gün)",
+                                    text = bannerTitle,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp,
                                     color = StatusWarning
