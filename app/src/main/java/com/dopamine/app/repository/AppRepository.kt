@@ -50,6 +50,10 @@ class AppRepository(
             if (remoteReports != null) {
                 _reports.value = remoteReports
             }
+            val remoteResets = supabaseService.fetchPasswordResets()
+            if (remoteResets != null) {
+                _resetRequests.value = remoteResets
+            }
         }
     }
 
@@ -183,5 +187,25 @@ class AppRepository(
 
     fun getUserReport(userId: String): WeeklyReport? {
         return _reports.value.find { it.userId == userId }
+    }
+
+    fun deleteUser(userId: String) {
+        if (SupabaseConfig.isConfigured()) {
+            scope.launch { 
+                if (supabaseService.deleteUser(userId)) {
+                    _users.value = _users.value.filter { it.id != userId }
+                }
+            }
+        }
+    }
+
+    fun deletePasswordReset(resetId: String) {
+        if (SupabaseConfig.isConfigured()) {
+            scope.launch {
+                if (supabaseService.deletePasswordReset(resetId)) {
+                    _resetRequests.value = _resetRequests.value.filter { it.id != resetId }
+                }
+            }
+        }
     }
 }

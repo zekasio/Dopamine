@@ -10,6 +10,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
+import io.ktor.client.request.delete
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
@@ -151,18 +152,61 @@ class SupabaseService {
         return try {
             val url = "$baseUrl/rest/v1/password_resets"
             val jsonPayload = json.encodeToString(request)
-            android.util.Log.d("SupabaseService", "savePasswordReset payload: $jsonPayload")
             val response = client.post(url) {
                 header("apikey", anonKey)
                 header("Authorization", "Bearer $anonKey")
                 contentType(ContentType.Application.Json)
                 setBody(jsonPayload)
             }
-            val responseBody = response.bodyAsText()
-            android.util.Log.d("SupabaseService", "savePasswordReset response ${response.status.value}: $responseBody")
             response.status.value in 200..299
         } catch (e: Exception) {
-            android.util.Log.e("SupabaseService", "savePasswordReset error", e)
+            e.printStackTrace()
+            false
+        }
+    }
+
+    suspend fun fetchPasswordResets(): List<PasswordResetRequest>? {
+        if (!SupabaseConfig.isConfigured()) return null
+        return try {
+            val url = "$baseUrl/rest/v1/password_resets?select=*"
+            val response = client.get(url) {
+                header("apikey", anonKey)
+                header("Authorization", "Bearer $anonKey")
+            }
+            val bodyText = response.bodyAsText()
+            json.decodeFromString<List<PasswordResetRequest>>(bodyText)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    suspend fun deletePasswordReset(resetId: String): Boolean {
+        if (!SupabaseConfig.isConfigured()) return false
+        return try {
+            val url = "$baseUrl/rest/v1/password_resets?id=eq.$resetId"
+            val response = client.delete(url) {
+                header("apikey", anonKey)
+                header("Authorization", "Bearer $anonKey")
+            }
+            response.status.value in 200..299
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    suspend fun deleteUser(userId: String): Boolean {
+        if (!SupabaseConfig.isConfigured()) return false
+        return try {
+            val url = "$baseUrl/rest/v1/users?id=eq.$userId"
+            val response = client.delete(url) {
+                header("apikey", anonKey)
+                header("Authorization", "Bearer $anonKey")
+            }
+            response.status.value in 200..299
+        } catch (e: Exception) {
+            e.printStackTrace()
             false
         }
     }

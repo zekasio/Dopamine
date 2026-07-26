@@ -222,4 +222,13 @@ class MainViewModel(
         val uid = _currentUser.value?.id ?: return null
         return repository.getUserReport(uid)
     }
+    fun deleteUser(userId: String) {
+        repository.deleteUser(userId)
+        toastMessage.value = "Kullanıcı silindi"
+    }
+
+    fun deletePasswordReset(resetId: String) {
+        repository.deletePasswordReset(resetId)
+        toastMessage.value = "Talep silindi"
+    }
 }
