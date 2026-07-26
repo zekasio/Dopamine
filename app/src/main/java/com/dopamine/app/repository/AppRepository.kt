@@ -208,4 +208,25 @@ class AppRepository(
             }
         }
     }
+
+    fun saveUser(user: User) {
+        val currentUsers = _users.value.toMutableList()
+        currentUsers.add(user)
+        _users.value = currentUsers
+        if (SupabaseConfig.isConfigured()) {
+            scope.launch { supabaseService.saveUser(user) }
+        }
+    }
+
+    fun updateUser(user: User) {
+        val currentUsers = _users.value.toMutableList()
+        val index = currentUsers.indexOfFirst { it.id == user.id }
+        if (index != -1) {
+            currentUsers[index] = user
+            _users.value = currentUsers
+        }
+        if (SupabaseConfig.isConfigured()) {
+            scope.launch { supabaseService.updateUser(user) }
+        }
+    }
 }

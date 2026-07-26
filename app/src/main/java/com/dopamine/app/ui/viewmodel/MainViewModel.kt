@@ -263,4 +263,64 @@ class MainViewModel(
         repository.deletePasswordReset(resetId)
         toastMessage.value = "Talep silindi"
     }
+
+    // User Form Dialog State
+    var isUserFormOpen = MutableStateFlow(false)
+    var editingUser = MutableStateFlow<User?>(null)
+    var formUsername = MutableStateFlow("")
+    var formPassword = MutableStateFlow("")
+    var formFullName = MutableStateFlow("")
+    var formIsMod = MutableStateFlow(false)
+
+    fun openUserForm(user: User? = null) {
+        editingUser.value = user
+        if (user != null) {
+            formUsername.value = user.username
+            formPassword.value = user.password
+            formFullName.value = user.fullName
+            formIsMod.value = user.isModerator
+        } else {
+            formUsername.value = ""
+            formPassword.value = ""
+            formFullName.value = ""
+            formIsMod.value = false
+        }
+        isUserFormOpen.value = true
+    }
+
+    fun saveUserForm() {
+        val u = formUsername.value.trim()
+        val p = formPassword.value.trim()
+        val fn = formFullName.value.trim()
+        if (u.isEmpty() || fn.isEmpty()) {
+            toastMessage.value = "Lütfen gerekli alanları doldurun"
+            return
+        }
+        val currentEdit = editingUser.value
+        if (currentEdit != null) {
+            val updated = currentEdit.copy(
+                username = u,
+                password = p.ifEmpty { currentEdit.password },
+                fullName = fn,
+                isModerator = formIsMod.value
+            )
+            repository.updateUser(updated)
+            toastMessage.value = "Kullanıcı güncellendi"
+        } else {
+            if (p.isEmpty()) {
+                toastMessage.value = "Yeni kullanıcı için şifre zorunlu"
+                return
+            }
+            val newUser = User(
+                id = java.util.UUID.randomUUID().toString(),
+                username = u,
+                password = p,
+                fullName = fn,
+                isModerator = formIsMod.value
+            )
+            repository.saveUser(newUser)
+            toastMessage.value = "Yeni kullanıcı eklendi"
+        }
+        isUserFormOpen.value = false
+    }
 }

@@ -210,4 +210,39 @@ class SupabaseService {
             false
         }
     }
+    suspend fun saveUser(user: User): Boolean {
+        if (!SupabaseConfig.isConfigured()) return false
+        return try {
+            val url = "$baseUrl/rest/v1/users"
+            val jsonPayload = json.encodeToString(user)
+            val response = client.post(url) {
+                header("apikey", anonKey)
+                header("Authorization", "Bearer $anonKey")
+                contentType(ContentType.Application.Json)
+                setBody(jsonPayload)
+            }
+            response.status.value in 200..299
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    suspend fun updateUser(user: User): Boolean {
+        if (!SupabaseConfig.isConfigured()) return false
+        return try {
+            val url = "$baseUrl/rest/v1/users?id=eq.${user.id}"
+            val jsonPayload = json.encodeToString(user)
+            val response = client.patch(url) {
+                header("apikey", anonKey)
+                header("Authorization", "Bearer $anonKey")
+                contentType(ContentType.Application.Json)
+                setBody(jsonPayload)
+            }
+            response.status.value in 200..299
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
 }
