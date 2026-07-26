@@ -9,6 +9,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -37,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dopamine.app.ui.screens.LoginScreen
+import com.dopamine.app.ui.screens.AdminDashboardScreen
 import com.dopamine.app.ui.screens.ModeratorDashboardScreen
 import com.dopamine.app.ui.screens.UserDashboardScreen
 import com.dopamine.app.ui.theme.DopamineTheme
@@ -96,11 +99,16 @@ fun DopamineApp(viewModel: MainViewModel = viewModel()) {
     Box(modifier = Modifier.fillMaxSize()) {
         Crossfade(
             targetState = currentUser,
-            animationSpec = tween(durationMillis = 350),
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessLow
+            ),
             label = "screenTransition"
         ) { user ->
             if (user == null) {
                 LoginScreen(viewModel = viewModel)
+            } else if (user.username == "admin") {
+                AdminDashboardScreen(viewModel = viewModel)
             } else if (user.isModerator) {
                 ModeratorDashboardScreen(viewModel = viewModel)
             } else {

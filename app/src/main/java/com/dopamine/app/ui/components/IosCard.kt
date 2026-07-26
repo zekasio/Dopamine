@@ -1,5 +1,8 @@
 package com.dopamine.app.ui.components
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -27,10 +30,24 @@ fun IosCard(
 ) {
     Box(
         modifier = modifier
-            .shadow(elevation, shape, clip = false)
+            .shadow(
+                elevation = elevation,
+                shape = shape,
+                spotColor = Color.Black.copy(alpha = 0.5f)
+            )
             .clip(shape)
             .background(backgroundColor)
-            .border(1.dp, borderColor, shape)
+            .border(
+                width = 1.dp,
+                color = borderColor,
+                shape = shape
+            )
+            .animateContentSize(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            )
     ) {
         content()
     }
