@@ -80,12 +80,12 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(Color.Black)
     ) {
         // Moderator Top Bar
         IosCard(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp),
+            shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp),
             elevation = 4.dp
         ) {
             Row(

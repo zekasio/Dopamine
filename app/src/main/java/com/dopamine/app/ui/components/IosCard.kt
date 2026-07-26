@@ -22,9 +22,9 @@ import com.dopamine.app.ui.theme.GlassBorderDark
 @Composable
 fun IosCard(
     modifier: Modifier = Modifier,
-    backgroundColor: Color = MaterialTheme.colorScheme.surface,
-    borderColor: Color = GlassBorderDark, // Use AMOLED border
-    shape: Shape = RoundedCornerShape(20.dp),
+    backgroundColor: Color = Color.White.copy(alpha = 0.06f),
+    borderColor: Color = Color.White.copy(alpha = 0.15f), // Liquid Glass border
+    shape: Shape = RoundedCornerShape(24.dp),
     elevation: Dp = 4.dp,
     content: @Composable BoxScope.() -> Unit
 ) {

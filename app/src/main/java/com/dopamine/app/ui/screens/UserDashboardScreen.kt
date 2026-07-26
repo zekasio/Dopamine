@@ -86,12 +86,12 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(Color.Black)
     ) {
         // Top Header
         IosCard(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp),
+            shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp),
             elevation = 4.dp
         ) {
             Row(
@@ -156,6 +156,7 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
                         modifier = Modifier.fillMaxWidth(),
                         backgroundColor = StatusWarning.copy(alpha = 0.12f),
                         borderColor = StatusWarning,
+                        shape = RoundedCornerShape(percent = 50),
                         elevation = 2.dp
                     ) {
                         Row(
@@ -193,6 +194,7 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
                     modifier = Modifier.fillMaxWidth(),
                     backgroundColor = PrimaryBlue.copy(alpha = 0.12f),
                     borderColor = PrimaryBlue,
+                    shape = RoundedCornerShape(percent = 50),
                     elevation = 2.dp
                 ) {
                     Row(
@@ -222,6 +224,7 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
                     modifier = Modifier.fillMaxWidth(),
                     backgroundColor = StatusError.copy(alpha = 0.12f),
                     borderColor = StatusError,
+                    shape = RoundedCornerShape(24.dp),
                     elevation = 4.dp
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -263,6 +266,7 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
                     modifier = Modifier.fillMaxWidth(),
                     backgroundColor = StatusSuccess.copy(alpha = 0.12f),
                     borderColor = StatusSuccess,
+                    shape = RoundedCornerShape(24.dp),
                     elevation = 2.dp
                 ) {
                     Row(

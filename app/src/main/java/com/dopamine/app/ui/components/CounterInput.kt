@@ -45,7 +45,10 @@ fun CounterInput(
 ) {
     IosCard(
         modifier = modifier.fillMaxWidth(),
-        elevation = 2.dp
+        elevation = 0.dp,
+        shape = RoundedCornerShape(percent = 50),
+        backgroundColor = Color.White.copy(alpha = 0.06f),
+        borderColor = Color.White.copy(alpha = 0.1f)
     ) {
         Row(
             modifier = Modifier

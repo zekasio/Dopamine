@@ -61,15 +61,7 @@ fun LoginScreen(viewModel: MainViewModel) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        PrimaryBlue.copy(alpha = 0.15f),
-                        AccentPurple.copy(alpha = 0.08f),
-                        MaterialTheme.colorScheme.background
-                    )
-                )
-            )
+            .background(Color.Black)
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -107,7 +99,7 @@ fun LoginScreen(viewModel: MainViewModel) {
                     .padding(bottom = 24.dp)
                     .background(
                         StatusSuccess.copy(alpha = 0.15f),
-                        shape = RoundedCornerShape(20.dp)
+                        shape = RoundedCornerShape(percent = 50)
                     )
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically

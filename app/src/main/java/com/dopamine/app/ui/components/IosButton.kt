@@ -41,7 +41,7 @@ fun IosButton(
     backgroundColor: Color = MaterialTheme.colorScheme.primary,
     contentColor: Color = Color.White,
     icon: ImageVector? = null,
-    shape: Shape = RoundedCornerShape(16.dp),
+    shape: Shape = RoundedCornerShape(percent = 50),
     height: Dp = 54.dp
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -59,7 +59,16 @@ fun IosButton(
             .fillMaxWidth()
             .height(height)
             .clip(shape)
-            .background(if (enabled) backgroundColor else backgroundColor.copy(alpha = 0.4f))
+            .background(
+                if (enabled && backgroundColor == MaterialTheme.colorScheme.primary) 
+                    androidx.compose.ui.graphics.Brush.horizontalGradient(
+                        colors = listOf(com.dopamine.app.ui.theme.PrimaryBlue, com.dopamine.app.ui.theme.AccentPurple)
+                    )
+                else if (enabled) 
+                    androidx.compose.ui.graphics.SolidColor(backgroundColor)
+                else 
+                    androidx.compose.ui.graphics.SolidColor(backgroundColor.copy(alpha = 0.4f))
+            )
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
