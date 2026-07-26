@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "dart-mcp-server": {
+      "command": "dart",
+      "args": [
+        "mcp-server"
+      ],
+      "env": {}
+    },
+    "StitchMCP": {
+      "$typeName": "exa.cascade_plugins_pb.CascadePluginCommandTemplate",
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://stitch.googleapis.com/mcp",
+        "--header",
+        "X-Goog-Api-Key: AQ.Ab8RN6JfFsl0HBbzQmmxhSJEFCqykGZEgFnTWt9hA1fj-i534g"
+      ],
+      "env": {}
+    }
+  }
+}

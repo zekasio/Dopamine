@@ -93,11 +93,13 @@ class AppRepository(
         val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
         val hourOfDay = cal.get(Calendar.HOUR_OF_DAY)
 
-        // Check if report is submitted on time (Wednesday before/at 21:00 or any day before Wednesday 21:00)
+        // Check if report is submitted on time
         val isOnTime = if (dayOfWeek == Calendar.WEDNESDAY) {
             hourOfDay <= 21
+        } else if (dayOfWeek == Calendar.SUNDAY) {
+            hourOfDay <= 21 // Assuming 21:00 as deadline for Sunday too
         } else {
-            dayOfWeek < Calendar.WEDNESDAY || dayOfWeek == Calendar.SUNDAY
+            true
         }
 
         val updatedReport = report.copy(
