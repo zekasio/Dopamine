@@ -23,6 +23,7 @@ class MainViewModel(
 
     private val repository: AppRepository = AppRepository()
     private val notificationManager = AppNotificationManager(application.applicationContext)
+    private val prefs = application.getSharedPreferences("dopamine_prefs", android.content.Context.MODE_PRIVATE)
 
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
@@ -40,6 +41,27 @@ class MainViewModel(
     // Password reset dialog state
     var isResetDialogOpen = MutableStateFlow(false)
     var resetMessageInput = MutableStateFlow("Lütfen şifremi sıfırlayın.")
+
+    init {
+        val savedUserId = prefs.getString("user_id", null)
+        val savedUsername = prefs.getString("username", null)
+        val savedFullName = prefs.getString("full_name", null)
+        val savedIsMod = prefs.getBoolean("is_mod", false)
+        val savedDistrict = prefs.getString("district", null)
+
+        if (savedUserId != null && savedUsername != null && savedFullName != null) {
+            _currentUser.value = User(
+                id = savedUserId,
+                username = savedUsername,
+                password = "",
+                fullName = savedFullName,
+                isModerator = savedIsMod,
+                district = savedDistrict ?: ""
+            )
+        }
+        startSupabaseRealtimePolling()
+    }
+
     var resetDialogSuccess = MutableStateFlow<String?>(null)
 
     // Moderator Reject Dialog state
@@ -116,6 +138,15 @@ class MainViewModel(
 
             if (authenticatedUser != null) {
                 _currentUser.value = authenticatedUser
+                
+                prefs.edit()
+                    .putString("user_id", authenticatedUser.id)
+                    .putString("username", authenticatedUser.username)
+                    .putString("full_name", authenticatedUser.fullName)
+                    .putBoolean("is_mod", authenticatedUser.isModerator)
+                    .putString("district", authenticatedUser.district)
+                    .apply()
+
                 loginError.value = null
                 toastMessage.value = "Hoş geldiniz, ${authenticatedUser.fullName} ✨"
 
@@ -138,6 +169,7 @@ class MainViewModel(
     }
 
     fun logout() {
+        prefs.edit().clear().apply()
         _currentUser.value = null
         loginUsername.value = ""
         loginPassword.value = ""
