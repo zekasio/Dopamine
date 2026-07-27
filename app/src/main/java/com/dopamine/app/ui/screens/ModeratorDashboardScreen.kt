@@ -2,6 +2,7 @@ package com.dopamine.app.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -82,59 +83,47 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        // Moderator Top Bar
-        IosCard(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp),
-            elevation = 4.dp
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 24.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .border(1.dp, Color(0xFF00E5FF).copy(alpha = 0.5f), CircleShape)
+                        .background(Color(0xFF00E5FF).copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
                     Icon(
                         imageVector = Icons.Default.AdminPanelSettings,
                         contentDescription = null,
-                        tint = PrimaryBlue,
-                        modifier = Modifier.size(32.dp).padding(end = 8.dp)
+                        tint = Color(0xFF00E5FF),
+                        modifier = Modifier.size(24.dp)
                     )
-                    Column {
-                        Text(
-                            text = "Moderatör Paneli",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = PrimaryBlue
-                        )
-                        Text(
-                            text = "Dinamik Kayıtlı Kullanıcı Rapor Takibi",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                        )
-                    }
                 }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(Color.Red.copy(alpha = 0.1f))
-                        .clickable { viewModel.logout() }
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                        contentDescription = "Çıkış",
-                        tint = Color.Red,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Çıkış", color = Color.Red, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = "MODERATÖR",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White,
+                    letterSpacing = 1.sp
+                )
             }
+            
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                contentDescription = "Çıkış",
+                tint = Color.White,
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable { viewModel.logout() }
+            )
         }
 
         Column(
@@ -204,7 +193,10 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
 
                         IosCard(
                             modifier = Modifier.fillMaxWidth(),
-                            elevation = 2.dp
+                            elevation = 0.dp,
+                            backgroundColor = Color(0xFF111111),
+                            borderColor = Color.White.copy(alpha = 0.05f),
+                            shape = RoundedCornerShape(16.dp)
                         ) {
                             Row(
                                 modifier = Modifier
@@ -343,7 +335,10 @@ private fun ReportItemCard(
 
     IosCard(
         modifier = Modifier.fillMaxWidth(),
-        elevation = 3.dp
+        elevation = 0.dp,
+        backgroundColor = Color(0xFF111111),
+        borderColor = Color.White.copy(alpha = 0.05f),
+        shape = RoundedCornerShape(20.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -453,9 +448,10 @@ private fun ReportItemCard(
                     IosButton(
                         text = "Reddet",
                         icon = Icons.Default.Cancel,
-                        backgroundColor = StatusError,
+                        backgroundColor = Color(0xFF111111),
+                        contentColor = StatusError,
                         onClick = onReject,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f).border(1.dp, StatusError.copy(alpha=0.3f), RoundedCornerShape(50)),
                         height = 44.dp
                     )
                 }

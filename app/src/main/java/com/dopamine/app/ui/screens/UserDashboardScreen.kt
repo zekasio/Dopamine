@@ -23,6 +23,8 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Warning
@@ -78,12 +80,16 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
     var stickerPasting by remember(userReport) { mutableIntStateOf(userReport?.stickerPastingCount ?: 0) }
     var logoGifts by remember(userReport) { mutableIntStateOf(userReport?.logoGiftsCount ?: 0) }
     var fieldParticipants by remember(userReport) { mutableStateOf(userReport?.fieldWorkParticipants ?: "") }
+    var isEditingMode by remember { mutableStateOf(false) }
 
     // Check system time
     val cal = Calendar.getInstance()
     val isSunday = cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
     val isWednesday = cal.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY
     val currentHour = cal.get(Calendar.HOUR_OF_DAY)
+    
+    val isSundayLate = isSunday && currentHour >= 23
+    val isBeforeWednesday = cal.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.TUESDAY || isSundayLate
 
     Column(
         modifier = Modifier
@@ -116,7 +122,7 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "FIELD OPS",
+                    text = "SAHA RAPORU",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White,
@@ -292,91 +298,169 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
 
             // Report Form Title removed as per screenshot
 
-            // Form Inputs (All 8 requested fields)
-            CounterInput(
-                title = "Bu haftaki Yeni Üye Sayısı",
-                icon = Icons.Default.PersonAdd,
-                count = newMembers,
-                onCountChange = { newMembers = it }
-            )
-
-            CounterInput(
-                title = "Ev Ziyareti",
-                icon = Icons.Default.Home,
-                count = homeVisits,
-                onCountChange = { homeVisits = it }
-            )
-
-            CounterInput(
-                title = "Esnaf Ziyareti",
-                icon = Icons.Default.Store,
-                count = shopVisits,
-                onCountChange = { shopVisits = it }
-            )
-
-            CounterInput(
-                title = "Kitap Hediyesi",
-                icon = Icons.Default.MenuBook,
-                count = bookGifts,
-                onCountChange = { bookGifts = it }
-            )
-
-            CounterInput(
-                title = "Broşür Dağıtımı",
-                icon = Icons.Default.Article,
-                count = brochureDist,
-                onCountChange = { brochureDist = it }
-            )
-
-            CounterInput(
-                title = "Etiket Yapıştırma",
-                icon = Icons.Default.Label,
-                count = stickerPasting,
-                onCountChange = { stickerPasting = it }
-            )
-
-            CounterInput(
-                title = "Logolu Hediyelik",
-                icon = Icons.Default.CardGiftcard,
-                count = logoGifts,
-                onCountChange = { logoGifts = it }
-            )
-
-            // Field work participants text area
-            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
-                Text(
-                    text = "SAHA ÇALIŞMASINA KATILANLAR",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.White.copy(alpha = 0.8f),
-                    letterSpacing = 1.sp
+            if (isBeforeWednesday && userReport == null) {
+                // Show Wait for Wednesday screen
+                Box(modifier = Modifier.fillMaxSize().padding(top = 80.dp), contentAlignment = Alignment.TopCenter) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = null,
+                            tint = Color(0xFF00E5FF).copy(alpha = 0.5f),
+                            modifier = Modifier.size(64.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "RAPOR GÜNÜ GELMEDİ",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Rapor gönderimleri Çarşamba günü başlıyor.",
+                            fontSize = 14.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(top = 8.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            } else if (userReport != null && !isEditingMode && userReport.status != ReportStatus.REJECTED) {
+                // Show Finished screen
+                Box(modifier = Modifier.fillMaxSize().padding(top = 60.dp), contentAlignment = Alignment.TopCenter) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF00E5FF).copy(alpha = 0.1f))
+                                .border(2.dp, Color(0xFF00E5FF).copy(alpha = 0.5f), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color(0xFF00E5FF),
+                                modifier = Modifier.size(50.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            text = if (userReport.status == ReportStatus.APPROVED) "RAPOR ONAYLANDI" else "TÜM İŞLEMLER BİTTİ",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.White,
+                            letterSpacing = 1.sp
+                        )
+                        Text(
+                            text = if (userReport.status == ReportStatus.APPROVED) "Harika bir hafta geçirdiniz, tebrikler!" else "Raporunuz başarıyla gönderildi ve inceleniyor.",
+                            fontSize = 14.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(top = 8.dp),
+                            textAlign = TextAlign.Center
+                        )
+                        
+                        Spacer(modifier = Modifier.height(40.dp))
+                        
+                        if (userReport.status == ReportStatus.PENDING) {
+                            IosButton(
+                                text = "RAPORU DÜZENLE ▷",
+                                icon = null,
+                                backgroundColor = Color(0xFF111111),
+                                contentColor = Color(0xFF00E5FF),
+                                modifier = Modifier.fillMaxWidth().border(1.dp, Color(0xFF00E5FF).copy(alpha=0.3f), RoundedCornerShape(50)),
+                                onClick = { isEditingMode = true }
+                            )
+                        }
+                    }
+                }
+            } else {
+                // Form Inputs (All 8 requested fields)
+                CounterInput(
+                    title = "Bu haftaki Yeni Üye Sayısı",
+                    icon = Icons.Default.PersonAdd,
+                    count = newMembers,
+                    onCountChange = { newMembers = it }
                 )
-                Spacer(modifier = Modifier.height(12.dp))
-                IosTextField(
-                    value = fieldParticipants,
-                    onValueChange = { fieldParticipants = it },
-                    label = "",
-                    placeholder = "İsimleri aralarında virgül ile belirtin...",
-                    singleLine = false,
-                    minLines = 3
+
+                CounterInput(
+                    title = "Ev Ziyareti",
+                    icon = Icons.Default.Home,
+                    count = homeVisits,
+                    onCountChange = { homeVisits = it }
                 )
-            }
 
-            Spacer(modifier = Modifier.height(8.dp))
+                CounterInput(
+                    title = "Esnaf Ziyareti",
+                    icon = Icons.Default.Store,
+                    count = shopVisits,
+                    onCountChange = { shopVisits = it }
+                )
 
-            // Submit Button
-            IosButton(
-                text = if (userReport?.status == ReportStatus.REJECTED) "GÜNCELLE & GÖNDER ▷" else "GÖNDER ▷",
-                icon = null,
-                onClick = {
-                    viewModel.submitReport(
-                        newMembers, homeVisits, shopVisits, bookGifts,
-                        brochureDist, stickerPasting, logoGifts, fieldParticipants
+                CounterInput(
+                    title = "Kitap Hediyesi",
+                    icon = Icons.Default.MenuBook,
+                    count = bookGifts,
+                    onCountChange = { bookGifts = it }
+                )
+
+                CounterInput(
+                    title = "Broşür Dağıtımı",
+                    icon = Icons.Default.Article,
+                    count = brochureDist,
+                    onCountChange = { brochureDist = it }
+                )
+
+                CounterInput(
+                    title = "Etiket Yapıştırma",
+                    icon = Icons.Default.Label,
+                    count = stickerPasting,
+                    onCountChange = { stickerPasting = it }
+                )
+
+                CounterInput(
+                    title = "Logolu Hediyelik",
+                    icon = Icons.Default.CardGiftcard,
+                    count = logoGifts,
+                    onCountChange = { logoGifts = it }
+                )
+
+                // Field work participants text area
+                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
+                    Text(
+                        text = "SAHA ÇALIŞMASINA KATILANLAR",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White.copy(alpha = 0.8f),
+                        letterSpacing = 1.sp
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    IosTextField(
+                        value = fieldParticipants,
+                        onValueChange = { fieldParticipants = it },
+                        label = "",
+                        placeholder = "İsimleri aralarında virgül ile belirtin...",
+                        singleLine = false,
+                        minLines = 3
                     )
                 }
-            )
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Submit Button
+                IosButton(
+                    text = if (userReport?.status == ReportStatus.REJECTED) "GÜNCELLE & GÖNDER ▷" else "GÖNDER ▷",
+                    icon = null,
+                    onClick = {
+                        viewModel.submitReport(
+                            newMembers, homeVisits, shopVisits, bookGifts,
+                            brochureDist, stickerPasting, logoGifts, fieldParticipants
+                        )
+                        isEditingMode = false
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+            }
         }
     }
 }

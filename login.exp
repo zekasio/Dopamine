@@ -1,0 +1,6 @@
+spawn npx -y firebase-tools@latest login --no-localhost
+expect "Enable Gemini in Firebase features?"
+send "n\r"
+expect "Allow Firebase to collect CLI and Emulator Suite usage and error reporting information?"
+send "n\r"
+expect eof

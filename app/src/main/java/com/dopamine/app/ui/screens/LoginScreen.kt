@@ -93,31 +93,7 @@ fun LoginScreen(viewModel: MainViewModel) {
                 modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
             )
 
-            // Embedded Fixed Supabase Status Indicator
-            Row(
-                modifier = Modifier
-                    .padding(bottom = 24.dp)
-                    .background(
-                        StatusSuccess.copy(alpha = 0.15f),
-                        shape = RoundedCornerShape(percent = 50)
-                    )
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Cloud,
-                    contentDescription = null,
-                    tint = StatusSuccess,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "Supabase Bağlı",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = StatusSuccess
-                )
-            }
+
 
             IosCard(
                 modifier = Modifier.fillMaxWidth(),

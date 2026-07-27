@@ -214,6 +214,8 @@ class MainViewModel(
 
         repository.submitReport(report)
         toastMessage.value = "Raporunuz Supabase veritabanına gönderildi! 🚀"
+        // Simulate notification for moderators
+        notificationManager.sendNewReportNotification(user.fullName)
     }
 
     fun approveReport(reportId: String) {

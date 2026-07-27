@@ -13,6 +13,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.UUID
+import java.net.HttpURLConnection
+import java.net.URL
+import org.json.JSONObject
+import org.json.JSONArray
 
 class AppRepository(
     private val supabaseService: SupabaseService = SupabaseService()
@@ -63,14 +67,22 @@ class AppRepository(
 
         if (SupabaseConfig.isConfigured()) {
             val supabaseUser = supabaseService.authenticateUser(cleanUsername, cleanPassword)
-            if (supabaseUser != null) return supabaseUser
+            if (supabaseUser != null) {
+                com.onesignal.OneSignal.login(supabaseUser.id)
+                return supabaseUser
+            }
         }
 
         if (cleanUsername == "mod" && (cleanPassword == "1234" || cleanPassword.isEmpty())) {
+            com.onesignal.OneSignal.login("user_mod_1")
             return User("user_mod_1", "mod", "Sistem Moderatörü", isModerator = true)
         }
 
-        return _users.value.find { it.username.lowercase() == cleanUsername && it.password == cleanPassword }
+        val localUser = _users.value.find { it.username.lowercase() == cleanUsername && it.password == cleanPassword }
+        if (localUser != null) {
+            com.onesignal.OneSignal.login(localUser.id)
+        }
+        return localUser
     }
 
     fun requestPasswordReset(username: String, message: String) {
@@ -118,6 +130,15 @@ class AppRepository(
 
         if (SupabaseConfig.isConfigured()) {
             scope.launch { supabaseService.saveReport(updatedReport) }
+        }
+        
+        // Notify moderators
+        scope.launch {
+            val user = _users.value.find { it.id == report.userId }
+            sendOneSignalNotificationToModerators(
+                "Yeni Rapor Gönderildi",
+                "${user?.fullName ?: "Bir kullanıcı"} haftalık raporunu sisteme yükledi."
+            )
         }
     }
 
@@ -184,6 +205,15 @@ class AppRepository(
             scope.launch { supabaseService.updateUserNudge(userId, now) }
         }
 
+        // Send push notification
+        scope.launch {
+            sendOneSignalNotification(
+                targetUserId = targetUser.id,
+                title = "Dürtüldünüz!",
+                message = "Moderatör raporunuzu göndermenizi hatırlatıyor. Lütfen en kısa sürede raporunuzu girin."
+            )
+        }
+
         return Pair(true, "${targetUser.fullName} başarıyla dürtüldü! 🔔")
     }
 
@@ -229,6 +259,49 @@ class AppRepository(
         }
         if (SupabaseConfig.isConfigured()) {
             scope.launch { supabaseService.updateUser(user) }
+        }
+    }
+
+    private fun sendOneSignalNotification(targetUserId: String, title: String, message: String) {
+        sendOneSignalRequest(listOf(targetUserId), title, message)
+    }
+
+    private fun sendOneSignalNotificationToModerators(title: String, message: String) {
+        val modIds = _users.value.filter { it.isModerator }.map { it.id }
+        if (modIds.isNotEmpty()) {
+            sendOneSignalRequest(modIds, title, message)
+        }
+    }
+
+    private fun sendOneSignalRequest(targetUserIds: List<String>, title: String, message: String) {
+        try {
+            val url = URL("https://onesignal.com/api/v1/notifications")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "application/json; charset=utf-8")
+            connection.setRequestProperty("Authorization", "Basic os_v2_app_q5cjfot66rasxgyy4t6ghh6kolt26sdqhckexq4upwtzu3vjfta4qbksbkwxldm2ngzf6kaiwikw26nhljda6njpbpcbbvvbvlvc36a")
+            connection.doOutput = true
+
+            val jsonBody = JSONObject().apply {
+                put("app_id", "874492ba-7ef4-412b-9b18-e4fc639fca72")
+                put("target_channel", "push")
+                put("include_aliases", JSONObject().apply {
+                    put("external_id", JSONArray(targetUserIds))
+                })
+                put("headings", JSONObject().put("en", title).put("tr", title))
+                put("contents", JSONObject().put("en", message).put("tr", message))
+            }
+
+            val os = connection.outputStream
+            val input = jsonBody.toString().toByteArray(Charsets.UTF_8)
+            os.write(input, 0, input.size)
+            os.flush()
+            os.close()
+
+            val responseCode = connection.responseCode
+            println("OneSignal Response: $responseCode")
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }

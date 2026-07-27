@@ -88,4 +88,11 @@ class AppNotificationManager(private val context: Context) {
         val body = "$dayName saat $hour:00! Lütfen haftalık saha çalışması verilerinizi girin."
         sendNotification(title = title, message = body)
     }
+
+    fun sendNewReportNotification(userFullName: String) {
+        sendNotification(
+            title = "YENİ RAPOR 📝",
+            message = "$userFullName haftalık raporunu gönderdi. İncelemek için tıklayın."
+        )
+    }
 }

@@ -14,5 +14,7 @@ data class User(
     val isModerator: Boolean = false,
     @SerialName("last_nudge_timestamp")
     val lastNudgeTimestamp: Long? = null,
-    val district: String = ""
+    val district: String = "",
+    @SerialName("fcm_token")
+    val fcmToken: String? = null
 )

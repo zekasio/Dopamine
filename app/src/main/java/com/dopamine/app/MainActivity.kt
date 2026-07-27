@@ -45,18 +45,25 @@ import com.dopamine.app.ui.screens.UserDashboardScreen
 import com.dopamine.app.ui.theme.DopamineTheme
 import com.dopamine.app.ui.viewmodel.MainViewModel
 
-class MainActivity : ComponentActivity() {
+import android.app.AlertDialog
+import com.onesignal.OneSignal
+import com.onesignal.user.subscriptions.IPushSubscriptionObserver
+import com.onesignal.user.subscriptions.PushSubscriptionChangedState
+
+class MainActivity : ComponentActivity(), IPushSubscriptionObserver {
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { _: Boolean -> }
 
+    private var dialogShown = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Request POST_NOTIFICATIONS permission on Android 13+ (API 33+)
-        requestNotificationPermission()
+        OneSignal.User.pushSubscription.addObserver(this)
+        checkSubscription(OneSignal.User.pushSubscription.id)
 
         setContent {
             DopamineTheme {
@@ -80,6 +87,30 @@ class MainActivity : ComponentActivity() {
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
+    }
+
+    override fun onPushSubscriptionChange(state: PushSubscriptionChangedState) {
+        checkSubscription(state.current.id)
+    }
+
+    private fun checkSubscription(id: String?) {
+        if (!dialogShown && !id.isNullOrEmpty() && !id.startsWith("local-")) {
+            dialogShown = true
+            runOnUiThread {
+                AlertDialog.Builder(this)
+                    .setTitle("Your OneSignal SDK integration is complete!")
+                    .setMessage("You can now send Push Notifications & In-App Messages through OneSignal. Tap below to enable push notifications.")
+                    .setPositiveButton("Got it") { _, _ ->
+                        requestNotificationPermission()
+                    }
+                    .show()
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        OneSignal.User.pushSubscription.removeObserver(this)
     }
 }
 
