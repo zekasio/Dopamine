@@ -82,14 +82,7 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
     var fieldParticipants by remember(userReport) { mutableStateOf(userReport?.fieldWorkParticipants ?: "") }
     var isEditingMode by remember { mutableStateOf(false) }
 
-    // Check system time
-    val cal = Calendar.getInstance()
-    val isSunday = cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
-    val isWednesday = cal.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY
-    val currentHour = cal.get(Calendar.HOUR_OF_DAY)
-    
-    val isSundayLate = isSunday && currentHour >= 23
-    val isBeforeWednesday = cal.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.TUESDAY || isSundayLate
+    // Time checks removed to allow report submissions on any day
 
     Column(
         modifier = Modifier
@@ -147,9 +140,11 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Scheduled Reminder Banners
-            val showWednesdayBanner = isWednesday && currentHour >= 21
-            val showSundayBanner = isSunday && currentHour >= 12
+            // Scheduled Reminder Banners (logic simplified since any day is allowed, keeping banners for Wed/Sun only)
+            val cal = Calendar.getInstance()
+            val currentHour = cal.get(Calendar.HOUR_OF_DAY)
+            val showWednesdayBanner = cal.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY && currentHour >= 21
+            val showSundayBanner = cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY && currentHour >= 12
 
             if ((showWednesdayBanner || showSundayBanner) && (userReport == null || userReport.status == ReportStatus.REJECTED)) {
                 val bannerTitle = if (showSundayBanner) "Pazar Hatırlatması" else "Çarşamba Hatırlatması"
@@ -298,33 +293,7 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
 
             // Report Form Title removed as per screenshot
 
-            if (isBeforeWednesday && userReport == null) {
-                // Show Wait for Wednesday screen
-                Box(modifier = Modifier.fillMaxSize().padding(top = 80.dp), contentAlignment = Alignment.TopCenter) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = Icons.Default.Lock,
-                            contentDescription = null,
-                            tint = Color(0xFF00E5FF).copy(alpha = 0.5f),
-                            modifier = Modifier.size(64.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "RAPOR GÜNÜ GELMEDİ",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = Color.White
-                        )
-                        Text(
-                            text = "Rapor gönderimleri Çarşamba günü başlıyor.",
-                            fontSize = 14.sp,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(top = 8.dp),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            } else if (userReport != null && !isEditingMode && userReport.status != ReportStatus.REJECTED) {
+            if (userReport != null && !isEditingMode && userReport.status != ReportStatus.REJECTED) {
                 // Show Finished screen
                 Box(modifier = Modifier.fillMaxSize().padding(top = 60.dp), contentAlignment = Alignment.TopCenter) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {

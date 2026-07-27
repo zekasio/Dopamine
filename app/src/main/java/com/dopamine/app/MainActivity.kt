@@ -96,15 +96,7 @@ class MainActivity : ComponentActivity(), IPushSubscriptionObserver {
     private fun checkSubscription(id: String?) {
         if (!dialogShown && !id.isNullOrEmpty() && !id.startsWith("local-")) {
             dialogShown = true
-            runOnUiThread {
-                AlertDialog.Builder(this)
-                    .setTitle("Your OneSignal SDK integration is complete!")
-                    .setMessage("You can now send Push Notifications & In-App Messages through OneSignal. Tap below to enable push notifications.")
-                    .setPositiveButton("Got it") { _, _ ->
-                        requestNotificationPermission()
-                    }
-                    .show()
-            }
+            requestNotificationPermission()
         }
     }
 

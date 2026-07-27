@@ -21,7 +21,7 @@ class MainViewModel(
     application: Application
 ) : AndroidViewModel(application) {
 
-    private val repository: AppRepository = AppRepository()
+    private val repository: AppRepository = AppRepository(application.applicationContext)
     private val notificationManager = AppNotificationManager(application.applicationContext)
     private val prefs = application.getSharedPreferences("dopamine_prefs", android.content.Context.MODE_PRIVATE)
 
@@ -87,29 +87,41 @@ class MainViewModel(
 
                 // Check for status changes for notification
                 val user = _currentUser.value
-                if (user != null && !user.isModerator) {
-                    val currentReport = repository.getUserReport(user.id)
-                    if (currentReport != null) {
-                        if (previousReportStatus != null && previousReportStatus != currentReport.status) {
-                            if (currentReport.status == ReportStatus.APPROVED) {
-                                notificationManager.sendApprovalNotification(user.fullName)
-                            } else if (currentReport.status == ReportStatus.REJECTED) {
-                                notificationManager.sendRejectionNotification(
-                                    user.fullName,
-                                    currentReport.rejectionReason ?: "Detay eksik"
-                                )
-                            }
-                        }
-                        previousReportStatus = currentReport.status
-                    }
-                    
+                if (user != null) {
                     val currentUserData = users.value.find { it.id == user.id }
-                    if (currentUserData != null) {
-                        val newNudge = currentUserData.lastNudgeTimestamp
-                        if (previousNudgeTimestamp != null && newNudge != null && newNudge > previousNudgeTimestamp!!) {
-                            notificationManager.sendNudgeNotification(user.fullName)
+                    if (currentUserData != null && user != currentUserData) {
+                        _currentUser.value = currentUserData
+                        prefs.edit()
+                            .putString("username", currentUserData.username)
+                            .putString("full_name", currentUserData.fullName)
+                            .putBoolean("is_mod", currentUserData.isModerator)
+                            .putString("district", currentUserData.district)
+                            .apply()
+                    }
+
+                    if (!user.isModerator) {
+                        val currentReport = repository.getUserReport(user.id)
+                        if (currentReport != null) {
+                            if (previousReportStatus != null && previousReportStatus != currentReport.status) {
+                                if (currentReport.status == ReportStatus.APPROVED) {
+                                    notificationManager.sendApprovalNotification(user.fullName)
+                                } else if (currentReport.status == ReportStatus.REJECTED) {
+                                    notificationManager.sendRejectionNotification(
+                                        user.fullName,
+                                        currentReport.rejectionReason ?: "Detay eksik"
+                                    )
+                                }
+                            }
+                            previousReportStatus = currentReport.status
                         }
-                        previousNudgeTimestamp = newNudge
+                        
+                        if (currentUserData != null) {
+                            val newNudge = currentUserData.lastNudgeTimestamp
+                            if (previousNudgeTimestamp != null && newNudge != null && newNudge > previousNudgeTimestamp!!) {
+                                notificationManager.sendNudgeNotification(user.fullName)
+                            }
+                            previousNudgeTimestamp = newNudge
+                        }
                     }
                 }
             }
@@ -169,6 +181,7 @@ class MainViewModel(
     }
 
     fun logout() {
+        com.onesignal.OneSignal.logout()
         prefs.edit().clear().apply()
         _currentUser.value = null
         loginUsername.value = ""

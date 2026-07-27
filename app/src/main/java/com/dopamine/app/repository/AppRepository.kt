@@ -11,6 +11,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.decodeFromString
 import java.util.Calendar
 import java.util.UUID
 import java.net.HttpURLConnection
@@ -19,9 +21,11 @@ import org.json.JSONObject
 import org.json.JSONArray
 
 class AppRepository(
+    private val context: android.content.Context? = null,
     private val supabaseService: SupabaseService = SupabaseService()
 ) {
     private val scope = CoroutineScope(Dispatchers.IO)
+    private val prefs = context?.getSharedPreferences("dopamine_mock_db", android.content.Context.MODE_PRIVATE)
 
     private val _users = MutableStateFlow<List<User>>(
         listOf(
@@ -40,7 +44,35 @@ class AppRepository(
     val resetRequests: StateFlow<List<PasswordResetRequest>> = _resetRequests
 
     init {
+        loadLocally()
         syncFromSupabase()
+    }
+
+    private fun loadLocally() {
+        try {
+            val savedUsers = prefs?.getString("users", null)
+            if (savedUsers != null) {
+                _users.value = kotlinx.serialization.json.Json.decodeFromString(savedUsers)
+            }
+            val savedReports = prefs?.getString("reports", null)
+            if (savedReports != null) {
+                _reports.value = kotlinx.serialization.json.Json.decodeFromString(savedReports)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun saveUsersLocal() {
+        try {
+            prefs?.edit()?.putString("users", kotlinx.serialization.json.Json.encodeToString(_users.value))?.apply()
+        } catch (e: Exception) {}
+    }
+
+    private fun saveReportsLocal() {
+        try {
+            prefs?.edit()?.putString("reports", kotlinx.serialization.json.Json.encodeToString(_reports.value))?.apply()
+        } catch (e: Exception) {}
     }
 
     fun syncFromSupabase() {
@@ -127,6 +159,7 @@ class AppRepository(
             currentList.add(updatedReport)
         }
         _reports.value = currentList
+        saveReportsLocal()
 
         if (SupabaseConfig.isConfigured()) {
             scope.launch { supabaseService.saveReport(updatedReport) }
@@ -153,6 +186,7 @@ class AppRepository(
                 report
             }
         }
+        saveReportsLocal()
         if (SupabaseConfig.isConfigured() && updated != null) {
             scope.launch { supabaseService.updateReport(updated!!) }
         }
@@ -169,6 +203,7 @@ class AppRepository(
                 report
             }
         }
+        saveReportsLocal()
         if (SupabaseConfig.isConfigured() && updated != null) {
             scope.launch { supabaseService.updateReport(updated!!) }
         }
@@ -200,6 +235,7 @@ class AppRepository(
                 user
             }
         }
+        saveUsersLocal()
 
         if (SupabaseConfig.isConfigured()) {
             scope.launch { supabaseService.updateUserNudge(userId, now) }
@@ -222,11 +258,11 @@ class AppRepository(
     }
 
     fun deleteUser(userId: String) {
+        _users.value = _users.value.filter { it.id != userId }
+        saveUsersLocal()
         if (SupabaseConfig.isConfigured()) {
             scope.launch { 
-                if (supabaseService.deleteUser(userId)) {
-                    _users.value = _users.value.filter { it.id != userId }
-                }
+                supabaseService.deleteUser(userId)
             }
         }
     }
@@ -245,6 +281,7 @@ class AppRepository(
         val currentUsers = _users.value.toMutableList()
         currentUsers.add(user)
         _users.value = currentUsers
+        saveUsersLocal()
         if (SupabaseConfig.isConfigured()) {
             scope.launch { supabaseService.saveUser(user) }
         }
@@ -256,6 +293,7 @@ class AppRepository(
         if (index != -1) {
             currentUsers[index] = user
             _users.value = currentUsers
+            saveUsersLocal()
         }
         if (SupabaseConfig.isConfigured()) {
             scope.launch { supabaseService.updateUser(user) }
