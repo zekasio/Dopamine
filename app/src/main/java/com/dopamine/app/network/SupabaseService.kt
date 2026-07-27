@@ -245,4 +245,19 @@ class SupabaseService {
             false
         }
     }
+
+    suspend fun deleteReport(reportId: String): Boolean {
+        if (!SupabaseConfig.isConfigured()) return false
+        return try {
+            val url = "$baseUrl/rest/v1/reports?id=eq.${reportId}"
+            val response = client.delete(url) {
+                header("apikey", anonKey)
+                header("Authorization", "Bearer $anonKey")
+            }
+            response.status.value in 200..299
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
 }
