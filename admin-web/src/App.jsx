@@ -157,6 +157,13 @@ function App() {
     await supabase.from('password_resets').delete().eq('id', id)
   }
 
+  const deleteReport = async (id) => {
+    if (confirm('Bu raporu silmek istediğinize emin misiniz?')) {
+      setReports(prev => prev.filter(r => r.id !== id))
+      await supabase.from('reports').delete().eq('id', id)
+    }
+  }
+
   const getSortedUsers = (reqUsername) => {
     const req = (reqUsername || '').toLowerCase()
     return [...users].sort((a, b) => {
@@ -451,13 +458,22 @@ function App() {
                           Yeni Üye: {r.new_members_count} | Ev: {r.home_visits_count} | Esnaf: {r.shop_visits_count} | İlçe: {r.district || '-'}
                         </div>
                       </div>
-                      <div>
+                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                         <span className="badge" style={{ 
                           backgroundColor: r.status === 'APPROVED' ? 'rgba(0,230,118,0.15)' : (r.status === 'REJECTED' ? 'rgba(255,23,68,0.15)' : 'rgba(255,171,0,0.15)'),
                           color: r.status === 'APPROVED' ? 'var(--status-success)' : (r.status === 'REJECTED' ? 'var(--status-error)' : 'var(--status-warning)')
                         }}>
                           {r.status}
                         </span>
+                        <motion.button 
+                          whileHover={{ scale: 1.05 }} 
+                          whileTap={{ scale: 0.95 }}
+                          className="btn btn-danger" 
+                          style={{ borderRadius: '10px', padding: '0.4rem 0.8rem' }}
+                          onClick={() => deleteReport(r.id)}
+                        >
+                          <Trash2 size={14} /> Sil
+                        </motion.button>
                       </div>
                     </motion.div>
                   ))}
