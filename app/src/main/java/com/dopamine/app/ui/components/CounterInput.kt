@@ -9,7 +9,10 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -46,72 +49,76 @@ fun CounterInput(
     IosCard(
         modifier = modifier.fillMaxWidth(),
         elevation = 0.dp,
-        shape = RoundedCornerShape(percent = 50),
-        backgroundColor = Color.White.copy(alpha = 0.06f),
-        borderColor = Color.White.copy(alpha = 0.1f)
+        shape = RoundedCornerShape(20.dp),
+        backgroundColor = Color(0xFF111111),
+        borderColor = Color.White.copy(alpha = 0.05f)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(20.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // Top Row: Title and Icon
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Text(
+                    text = title,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White.copy(alpha = 0.9f)
+                )
                 Icon(
                     imageVector = icon,
                     contentDescription = title,
-                    tint = PrimaryBlue,
-                    modifier = Modifier
-                        .size(22.dp)
-                        .padding(end = 0.dp)
-                )
-                Text(
-                    text = title,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(start = 12.dp)
+                    tint = Color(0xFF00E5FF),
+                    modifier = Modifier.size(20.dp)
                 )
             }
-
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            // Bottom Row: Number and Buttons
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
             ) {
-                // Minus button
-                CounterButton(
-                    onClick = { if (count > 0) onCountChange(count - 1) },
-                    enabled = count > 0
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Remove,
-                        contentDescription = "Azalt",
-                        tint = if (count > 0) PrimaryBlue else Color.Gray,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-
-                // Number Display
                 Text(
                     text = count.toString(),
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(horizontal = 4.dp)
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White
                 )
-
-                // Plus button
-                CounterButton(
-                    onClick = { onCountChange(count + 1) },
-                    enabled = true
+                
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Artır",
-                        tint = PrimaryBlue,
-                        modifier = Modifier.size(18.dp)
-                    )
+                    CounterButton(
+                        onClick = { if (count > 0) onCountChange(count - 1) },
+                        enabled = count > 0
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Remove,
+                            contentDescription = "Azalt",
+                            tint = Color.White.copy(alpha = 0.7f),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                    CounterButton(
+                        onClick = { onCountChange(count + 1) },
+                        enabled = true
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Artır",
+                            tint = Color.White.copy(alpha = 0.7f),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 }
             }
         }
@@ -139,8 +146,8 @@ private fun CounterButton(
             .size(36.dp)
             .clip(CircleShape)
             .background(
-                if (enabled) PrimaryBlue.copy(alpha = 0.12f)
-                else Color.Gray.copy(alpha = 0.1f)
+                if (enabled) Color.White.copy(alpha = 0.15f)
+                else Color.White.copy(alpha = 0.05f)
             )
             .clickable(
                 interactionSource = interactionSource,

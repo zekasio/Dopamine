@@ -39,7 +39,7 @@ fun IosButton(
     enabled: Boolean = true,
     isLoading: Boolean = false,
     backgroundColor: Color = MaterialTheme.colorScheme.primary,
-    contentColor: Color = Color.White,
+    contentColor: Color = Color.Black,
     icon: ImageVector? = null,
     shape: Shape = RoundedCornerShape(percent = 50),
     height: Dp = 54.dp
@@ -62,7 +62,7 @@ fun IosButton(
             .background(
                 if (enabled && backgroundColor == MaterialTheme.colorScheme.primary) 
                     androidx.compose.ui.graphics.Brush.horizontalGradient(
-                        colors = listOf(com.dopamine.app.ui.theme.PrimaryBlue, com.dopamine.app.ui.theme.AccentPurple)
+                        colors = listOf(Color(0xFF00E5FF), Color(0xFFB2EBF2)) // Bright Cyan to lighter cyan
                     )
                 else if (enabled) 
                     androidx.compose.ui.graphics.SolidColor(backgroundColor)

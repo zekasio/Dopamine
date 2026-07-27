@@ -1,6 +1,7 @@
 package com.dopamine.app.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Warning
@@ -88,52 +90,48 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        // Top Header
-        IosCard(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp),
-            elevation = 4.dp
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 24.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = "Hoş Geldin",
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                    )
-                    Text(
-                        text = user?.fullName ?: "Kullanıcı",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .border(1.dp, Color(0xFF00E5FF).copy(alpha = 0.5f), CircleShape)
+                        .background(Color(0xFF00E5FF).copy(alpha = 0.1f))
+                        .clickable { viewModel.refreshData() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Yenile",
+                        tint = Color(0xFF00E5FF),
+                        modifier = Modifier.size(20.dp)
                     )
                 }
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(PrimaryBlue.copy(alpha = 0.1f))
-                            .clickable { viewModel.refreshData() }
-                            .padding(10.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "Yenile",
-                            tint = PrimaryBlue,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = "FIELD OPS",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White,
+                    letterSpacing = 1.sp
+                )
             }
+            
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                contentDescription = "Çıkış",
+                tint = Color.White,
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable { viewModel.logout() }
+            )
         }
 
         Column(
@@ -154,33 +152,28 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
                 if (true) {
                     IosCard(
                         modifier = Modifier.fillMaxWidth(),
-                        backgroundColor = StatusWarning.copy(alpha = 0.12f),
-                        borderColor = StatusWarning,
+                        backgroundColor = Color(0xFF111111),
+                        borderColor = Color(0xFFFF00FF).copy(alpha = 0.6f),
                         shape = RoundedCornerShape(percent = 50),
-                        elevation = 2.dp
+                        elevation = 0.dp
                     ) {
                         Row(
                             modifier = Modifier.padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = Icons.Default.NotificationsActive,
+                                imageVector = Icons.Default.Warning,
                                 contentDescription = null,
-                                tint = StatusWarning,
-                                modifier = Modifier.size(28.dp)
+                                tint = Color(0xFFFF00FF),
+                                modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = bannerTitle,
+                                    text = "$bannerTitle: $bannerMessage",
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp,
-                                    color = StatusWarning
-                                )
-                                Text(
-                                    text = bannerMessage,
-                                    fontSize = 14.sp,
-                                    color = MaterialTheme.colorScheme.onBackground
+                                    fontSize = 13.sp,
+                                    color = Color.White
                                 )
                             }
                         }
@@ -297,25 +290,7 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
                 }
             }
 
-            // Report Form Title
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 4.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Assignment,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.size(22.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Haftalık Saha Rapor Formu",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-            }
+            // Report Form Title removed as per screenshot
 
             // Form Inputs (All 8 requested fields)
             CounterInput(
@@ -368,44 +343,31 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
             )
 
             // Field work participants text area
-            IosCard(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = 2.dp
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Groups,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.size(20.dp).padding(end = 8.dp)
-                        )
-                        Text(
-                            text = "Saha Çalışmasına Katılanlar",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    IosTextField(
-                        value = fieldParticipants,
-                        onValueChange = { fieldParticipants = it },
-                        label = "",
-                        placeholder = "Katılan isimleri ve saha notları yazın...",
-                        singleLine = false,
-                        minLines = 3
-                    )
-                }
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
+                Text(
+                    text = "SAHA ÇALIŞMASINA KATILANLAR",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White.copy(alpha = 0.8f),
+                    letterSpacing = 1.sp
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                IosTextField(
+                    value = fieldParticipants,
+                    onValueChange = { fieldParticipants = it },
+                    label = "",
+                    placeholder = "İsimleri aralarında virgül ile belirtin...",
+                    singleLine = false,
+                    minLines = 3
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             // Submit Button
             IosButton(
-                text = if (userReport?.status == ReportStatus.REJECTED) "Raporu Güncelle & Tekrar Gönder" else "Raporu Gönder",
-                icon = Icons.AutoMirrored.Filled.Send,
+                text = if (userReport?.status == ReportStatus.REJECTED) "GÜNCELLE & GÖNDER ▷" else "GÖNDER ▷",
+                icon = null,
                 onClick = {
                     viewModel.submitReport(
                         newMembers, homeVisits, shopVisits, bookGifts,

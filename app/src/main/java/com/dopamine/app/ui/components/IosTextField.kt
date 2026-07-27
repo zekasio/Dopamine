@@ -58,14 +58,14 @@ fun IosTextField(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(14.dp))
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                .clip(RoundedCornerShape(24.dp))
+                .background(Color(0xFF111111))
                 .border(
-                    width = if (isFocused) 2.dp else 1.dp,
-                    color = if (isFocused) PrimaryBlue else GlassBorderDark,
-                    shape = RoundedCornerShape(14.dp)
+                    width = if (isFocused) 1.dp else 1.dp,
+                    color = if (isFocused) Color(0xFF00E5FF) else Color.White.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(24.dp)
                 )
-                .padding(horizontal = 16.dp, vertical = if (singleLine) 14.dp else 12.dp)
+                .padding(horizontal = 20.dp, vertical = if (singleLine) 16.dp else 16.dp)
         ) {
             if (value.isEmpty() && placeholder.isNotEmpty()) {
                 Text(
