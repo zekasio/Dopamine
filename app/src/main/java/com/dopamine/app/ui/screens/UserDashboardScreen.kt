@@ -1,4 +1,3 @@
-import androidx.compose.ui.graphics.Brush
 package com.dopamine.app.ui.screens
 
 import androidx.compose.foundation.background
@@ -294,53 +293,16 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
 
             // Report Form Title removed as per screenshot
 
-            if (isBeforeWednesday && userReport == null) {
-                // Elegant Wait for Wednesday screen for 40yo women demographic
-                Box(modifier = Modifier.fillMaxSize().padding(top = 80.dp), contentAlignment = Alignment.TopCenter) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 24.dp)) {
-                        Box(
-                            modifier = Modifier
-                                .size(90.dp)
-                                .clip(CircleShape)
-                                .background(Brush.linearGradient(listOf(Color(0xFF2979FF).copy(alpha = 0.2f), Color(0xFF7C4DFF).copy(alpha = 0.2f))))
-                                .border(1.dp, Color.White.copy(alpha = 0.3f), CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.CalendarToday,
-                                contentDescription = null,
-                                tint = Color.White.copy(alpha = 0.9f),
-                                modifier = Modifier.size(40.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Text(
-                            text = "Henüz Rapor Vakti Gelmedi",
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.White,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "Değerli üyemiz, haftalık rapor gönderimleri Çarşamba günleri başlamaktadır. Çarşamba gününden itibaren giriş yaparak raporunuzu iletebilirsiniz.",
-                            fontSize = 15.sp,
-                            color = Color.LightGray,
-                            textAlign = TextAlign.Center,
-                            lineHeight = 22.sp
-                        )
-                    }
-                }
-            } else if (userReport != null && !isEditingMode) {
-                // Show Elegant Finished screen
+            if (userReport != null && !isEditingMode && userReport.status != ReportStatus.REJECTED) {
+                // Show Finished screen
                 Box(modifier = Modifier.fillMaxSize().padding(top = 60.dp), contentAlignment = Alignment.TopCenter) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 24.dp)) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Box(
                             modifier = Modifier
                                 .size(100.dp)
                                 .clip(CircleShape)
-                                .background(Brush.linearGradient(listOf(Color(0xFF2979FF).copy(alpha = 0.3f), Color(0xFF7C4DFF).copy(alpha = 0.3f))))
-                                .border(1.dp, Color(0xFF00E5FF).copy(alpha = 0.5f), CircleShape),
+                                .background(Color(0xFF00E5FF).copy(alpha = 0.1f))
+                                .border(2.dp, Color(0xFF00E5FF).copy(alpha = 0.5f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -352,31 +314,32 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
                         }
                         Spacer(modifier = Modifier.height(24.dp))
                         Text(
-                            text = "Teşekkür Ederiz!",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Medium,
+                            text = if (userReport.status == ReportStatus.APPROVED) "RAPOR ONAYLANDI" else "TÜM İŞLEMLER BİTTİ",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.ExtraBold,
                             color = Color.White,
                             letterSpacing = 1.sp
                         )
                         Text(
-                            text = "Bu haftaki raporunuzu başarıyla aldık. Emeğinize sağlık!",
-                            fontSize = 15.sp,
-                            color = Color.LightGray,
-                            modifier = Modifier.padding(top = 12.dp),
-                            textAlign = TextAlign.Center,
-                            lineHeight = 22.sp
+                            text = if (userReport.status == ReportStatus.APPROVED) "Harika bir hafta geçirdiniz, tebrikler!" else "Raporunuz başarıyla gönderildi ve inceleniyor.",
+                            fontSize = 14.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(top = 8.dp),
+                            textAlign = TextAlign.Center
                         )
                         
                         Spacer(modifier = Modifier.height(40.dp))
                         
-                        IosButton(
-                            text = "RAPORU DÜZENLE",
-                            icon = null,
-                            backgroundColor = Color(0xFF111111),
-                            contentColor = Color(0xFF00E5FF),
-                            modifier = Modifier.fillMaxWidth().border(1.dp, Color(0xFF00E5FF).copy(alpha=0.3f), RoundedCornerShape(50)),
-                            onClick = { isEditingMode = true }
-                        )
+                        if (userReport.status == ReportStatus.PENDING) {
+                            IosButton(
+                                text = "RAPORU DÜZENLE ▷",
+                                icon = null,
+                                backgroundColor = Color(0xFF111111),
+                                contentColor = Color(0xFF00E5FF),
+                                modifier = Modifier.fillMaxWidth().border(1.dp, Color(0xFF00E5FF).copy(alpha=0.3f), RoundedCornerShape(50)),
+                                onClick = { isEditingMode = true }
+                            )
+                        }
                     }
                 }
             } else {

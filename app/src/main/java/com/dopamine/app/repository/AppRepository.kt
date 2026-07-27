@@ -175,11 +175,37 @@ class AppRepository(
         }
     }
 
-    fun deleteReport(reportId: String) {
-        _reports.value = _reports.value.filter { it.id != reportId }
+    fun approveReport(reportId: String) {
+        var updated: WeeklyReport? = null
+        _reports.value = _reports.value.map { report ->
+            if (report.id == reportId) {
+                val rep = report.copy(status = ReportStatus.APPROVED, rejectionReason = null)
+                updated = rep
+                rep
+            } else {
+                report
+            }
+        }
         saveReportsLocal()
-        if (SupabaseConfig.isConfigured()) {
-            scope.launch { supabaseService.deleteReport(reportId) } // Ensure supabaseService has deleteReport
+        if (SupabaseConfig.isConfigured() && updated != null) {
+            scope.launch { supabaseService.updateReport(updated!!) }
+        }
+    }
+
+    fun rejectReport(reportId: String, reason: String) {
+        var updated: WeeklyReport? = null
+        _reports.value = _reports.value.map { report ->
+            if (report.id == reportId) {
+                val rep = report.copy(status = ReportStatus.REJECTED, rejectionReason = reason)
+                updated = rep
+                rep
+            } else {
+                report
+            }
+        }
+        saveReportsLocal()
+        if (SupabaseConfig.isConfigured() && updated != null) {
+            scope.launch { supabaseService.updateReport(updated!!) }
         }
     }
 

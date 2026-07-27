@@ -157,13 +157,6 @@ function App() {
     await supabase.from('password_resets').delete().eq('id', id)
   }
 
-  const deleteReport = async (id) => {
-    if (confirm('Bu raporu silmek istediğinize emin misiniz?')) {
-      setReports(prev => prev.filter(r => r.id !== id))
-      await supabase.from('reports').delete().eq('id', id)
-    }
-  }
-
   const getSortedUsers = (reqUsername) => {
     const req = (reqUsername || '').toLowerCase()
     return [...users].sort((a, b) => {
@@ -217,7 +210,12 @@ function App() {
           </p>
           <h3 style={{ color: 'var(--primary-blue)' }}>{reports.length}</h3>
         </motion.div>
-
+        <motion.div className="card" variants={itemVariants}>
+          <p style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase' }}>
+            <CheckCircle size={16} color="var(--status-success)" /> Onaylanan
+          </p>
+          <h3 style={{ color: 'var(--status-success)' }}>{reports.filter(r => r.status === 'APPROVED').length}</h3>
+        </motion.div>
         <motion.div className="card" variants={itemVariants}>
           <p style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase' }}>
             <ShieldAlert size={16} color="var(--status-warning)" /> Şifre Sıfırlama
@@ -454,15 +452,12 @@ function App() {
                         </div>
                       </div>
                       <div>
-                        <motion.button 
-                          whileHover={{ scale: 1.05 }} 
-                          whileTap={{ scale: 0.95 }}
-                          className="btn btn-danger" 
-                          style={{ borderRadius: '10px' }}
-                          onClick={() => deleteReport(r.id)}
-                        >
-                          <Trash2 size={14} /> Sil
-                        </motion.button>
+                        <span className="badge" style={{ 
+                          backgroundColor: r.status === 'APPROVED' ? 'rgba(0,230,118,0.15)' : (r.status === 'REJECTED' ? 'rgba(255,23,68,0.15)' : 'rgba(255,171,0,0.15)'),
+                          color: r.status === 'APPROVED' ? 'var(--status-success)' : (r.status === 'REJECTED' ? 'var(--status-error)' : 'var(--status-warning)')
+                        }}>
+                          {r.status}
+                        </span>
                       </div>
                     </motion.div>
                   ))}

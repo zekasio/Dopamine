@@ -64,7 +64,10 @@ class MainViewModel(
 
     var resetDialogSuccess = MutableStateFlow<String?>(null)
 
-
+    // Moderator Reject Dialog state
+    var isRejectDialogOpen = MutableStateFlow(false)
+    var rejectingReportId = MutableStateFlow<String?>(null)
+    var rejectionReasonInput = MutableStateFlow("")
 
     // Toast/Snackbar notifications
     var toastMessage = MutableStateFlow<String?>(null)
@@ -97,6 +100,20 @@ class MainViewModel(
                     }
 
                     if (!user.isModerator) {
+                        val currentReport = repository.getUserReport(user.id)
+                        if (currentReport != null) {
+                            if (previousReportStatus != null && previousReportStatus != currentReport.status) {
+                                if (currentReport.status == ReportStatus.APPROVED) {
+                                    notificationManager.sendApprovalNotification(user.fullName)
+                                } else if (currentReport.status == ReportStatus.REJECTED) {
+                                    notificationManager.sendRejectionNotification(
+                                        user.fullName,
+                                        currentReport.rejectionReason ?: "Detay eksik"
+                                    )
+                                }
+                            }
+                            previousReportStatus = currentReport.status
+                        }
                         
                         if (currentUserData != null) {
                             val newNudge = currentUserData.lastNudgeTimestamp
@@ -214,9 +231,29 @@ class MainViewModel(
         notificationManager.sendNewReportNotification(user.fullName)
     }
 
-    fun deleteReport(reportId: String) {
-        repository.deleteReport(reportId)
-        toastMessage.value = "Rapor silindi!"
+    fun approveReport(reportId: String) {
+        repository.approveReport(reportId)
+        toastMessage.value = "Rapor onaylandı! (Bildirim kullanıcıya iletildi)"
+    }
+
+    fun openRejectDialog(reportId: String) {
+        rejectingReportId.value = reportId
+        rejectionReasonInput.value = ""
+        isRejectDialogOpen.value = true
+    }
+
+    fun confirmRejectReport() {
+        val reportId = rejectingReportId.value ?: return
+        val reason = rejectionReasonInput.value.trim()
+        if (reason.isEmpty()) {
+            toastMessage.value = "Lütfen red nedenini yazın"
+            return
+        }
+
+        repository.rejectReport(reportId, reason)
+        isRejectDialogOpen.value = false
+        rejectingReportId.value = null
+        toastMessage.value = "Rapor reddedildi! (Bildirim kullanıcıya iletildi)"
     }
 
     fun nudgeUser(targetUserId: String) {

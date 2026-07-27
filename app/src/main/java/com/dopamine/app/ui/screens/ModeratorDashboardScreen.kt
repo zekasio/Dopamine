@@ -73,7 +73,8 @@ import java.util.Locale
 fun ModeratorDashboardScreen(viewModel: MainViewModel) {
     val users by viewModel.users.collectAsState()
     val reports by viewModel.reports.collectAsState()
-
+    val isRejectOpen by viewModel.isRejectDialogOpen.collectAsState()
+    val rejectReason by viewModel.rejectionReasonInput.collectAsState()
 
     var selectedTab by remember { mutableStateOf(0) }
 
@@ -172,7 +173,8 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
                         currentWeekReports.forEach { report ->
                             ReportItemCard(
                                 report = report,
-                                onDelete = { viewModel.deleteReport(report.id) }
+                                onApprove = { viewModel.approveReport(report.id) },
+                                onReject = { viewModel.openRejectDialog(report.id) }
                             )
                         }
                     }
@@ -253,13 +255,80 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
         }
     }
 
+    // Rejection Reason Modal Dialog
+    if (isRejectOpen) {
+        BasicAlertDialog(
+            onDismissRequest = { viewModel.isRejectDialogOpen.value = false }
+        ) {
+            IosCard(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = 8.dp
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = StatusError,
+                        modifier = Modifier.size(44.dp)
+                    )
 
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "Raporu Reddet",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = StatusError
+                    )
+
+                    Text(
+                        text = "Lütfen kullanıcıya iletilecek red nedenini yazın:",
+                        fontSize = 13.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
+                    )
+
+                    IosTextField(
+                        value = rejectReason,
+                        onValueChange = { viewModel.rejectionReasonInput.value = it },
+                        label = "Red Nedeni",
+                        placeholder = "Örn: Saha katılanlarının detayını eksik girmişsiniz...",
+                        singleLine = false,
+                        minLines = 3
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    IosButton(
+                        text = "Reddet ve Bildirim Gönder",
+                        backgroundColor = StatusError,
+                        onClick = { viewModel.confirmRejectReport() }
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = "İptal",
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        modifier = Modifier
+                            .clickable { viewModel.isRejectDialogOpen.value = false }
+                            .padding(6.dp)
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
 private fun ReportItemCard(
     report: WeeklyReport,
-    onDelete: () -> Unit
+    onApprove: () -> Unit,
+    onReject: () -> Unit
 ) {
     val dateFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale("tr"))
     val formattedDate = dateFormat.format(Date(report.submissionTimestamp))
@@ -292,7 +361,7 @@ private fun ReportItemCard(
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
-                    // StatusBadge(status = report.status) removed
+                    StatusBadge(status = report.status)
                     Spacer(modifier = Modifier.height(4.dp))
                     TimeStatusBadge(isOnTime = report.isSubmittedOnTime)
                 }
@@ -361,20 +430,31 @@ private fun ReportItemCard(
             }
 
             // Action Buttons
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                IosButton(
-                    text = "Raporu Sil",
-                    icon = Icons.Default.Delete,
-                    backgroundColor = Color(0xFF111111),
-                    contentColor = StatusError,
-                    onClick = onDelete,
-                    modifier = Modifier.weight(1f).border(1.dp, StatusError.copy(alpha=0.3f), RoundedCornerShape(50)),
-                    height = 44.dp
-                )
+            if (report.status == ReportStatus.PENDING) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    IosButton(
+                        text = "Onayla",
+                        icon = Icons.Default.CheckCircle,
+                        backgroundColor = StatusSuccess,
+                        onClick = onApprove,
+                        modifier = Modifier.weight(1f),
+                        height = 44.dp
+                    )
+
+                    IosButton(
+                        text = "Reddet",
+                        icon = Icons.Default.Cancel,
+                        backgroundColor = Color(0xFF111111),
+                        contentColor = StatusError,
+                        onClick = onReject,
+                        modifier = Modifier.weight(1f).border(1.dp, StatusError.copy(alpha=0.3f), RoundedCornerShape(50)),
+                        height = 44.dp
+                    )
+                }
             }
         }
     }
