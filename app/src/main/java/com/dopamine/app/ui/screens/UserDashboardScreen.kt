@@ -65,9 +65,7 @@ import com.dopamine.app.ui.theme.StatusSuccess
 import com.dopamine.app.ui.theme.StatusWarning
 import com.dopamine.app.ui.viewmodel.MainViewModel
 import java.util.Calendar
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
-import dev.chrisbanes.haze.hazeChild
+
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
@@ -88,18 +86,10 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
     var fieldParticipants by remember(userReport) { mutableStateOf(userReport?.fieldWorkParticipants ?: "") }
     var isEditingMode by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableStateOf(0) }
-    val hazeState = remember { HazeState() }
-
     androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .haze(
-                    state = hazeState,
-                    backgroundColor = Color.Black,
-                    tint = Color.Black.copy(alpha = 0.2f),
-                    blurRadius = 20.dp
-                )
         ) {
         Row(
             modifier = Modifier

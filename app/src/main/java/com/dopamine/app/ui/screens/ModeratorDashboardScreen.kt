@@ -70,9 +70,6 @@ import java.util.Date
 import java.util.Locale
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
-import dev.chrisbanes.haze.hazeChild
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Person
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -96,7 +93,7 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
                     .offset(x = (-50).dp, y = (-50).dp)
                     .background(
                         androidx.compose.ui.graphics.Brush.radialGradient(
-                            colors = listOf(Color(0xFF00E5FF).copy(alpha = 0.5f), Color.Transparent)
+                            colors = listOf(Color(0xFF00E5FF).copy(alpha = 0.6f), Color.Transparent)
                         )
                     )
             )
@@ -107,20 +104,20 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
                     .offset(x = 50.dp, y = 50.dp)
                     .background(
                         androidx.compose.ui.graphics.Brush.radialGradient(
-                            colors = listOf(Color(0xFF7C4DFF).copy(alpha = 0.4f), Color.Transparent)
+                            colors = listOf(Color(0xFF7C4DFF).copy(alpha = 0.5f), Color.Transparent)
                         )
                     )
             )
         }
 
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .haze(
                     state = hazeState,
-                    backgroundColor = Color.Transparent,
-                    tint = Color.White.copy(alpha = 0.03f),
-                    blurRadius = 40.dp
+                    backgroundColor = Color.Black.copy(alpha = 0.2f),
+                    tint = Color.White.copy(alpha = 0.15f),
+                    blurRadius = 80.dp
                 )
         ) {
         Row(
@@ -166,12 +163,11 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
             )
         }
 
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(top = 80.dp)
         ) {
-            // Filter out moderators - they don't submit reports!
             val normalUsers = users.filter { !it.isModerator }
             
             // Sadece bu haftanın raporlarını göster
@@ -181,13 +177,6 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
                 reportCal.get(java.util.Calendar.YEAR) == currentCal.get(java.util.Calendar.YEAR) &&
                 reportCal.get(java.util.Calendar.WEEK_OF_YEAR) == currentCal.get(java.util.Calendar.WEEK_OF_YEAR)
             }
-
-            SegmentedControl(
-                items = listOf("Bekleyenler", "Kullanıcılar"),
-                selectedIndex = selectedTab,
-                onSegmentSelected = { selectedTab = it },
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
 
             if (selectedTab == 0) {
                 // Tab 1: Submitted Reports
@@ -206,6 +195,8 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 100.dp) // padding for segmented control
                             .verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
@@ -223,6 +214,8 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 100.dp) // padding for segmented control
                         .verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -294,23 +287,15 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
         } // End of inner else
         } // End of Column
 
-        // Liquid Glass Bottom Nav
-        androidx.compose.foundation.layout.Box(
+        SegmentedControl(
+            items = listOf("Bekleyenler", "Kullanıcılar"),
+            selectedIndex = selectedTab,
+            onSegmentSelected = { selectedTab = it },
+            hazeState = hazeState,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(bottom = 24.dp, start = 24.dp, end = 24.dp)
-                .hazeChild(state = hazeState, shape = androidx.compose.foundation.shape.CircleShape)
-        ) {
-            com.dopamine.app.ui.components.LiquidGlassBottomNav(
-                items = listOf(
-                    com.dopamine.app.ui.components.NavItem("Raporlar", androidx.compose.material.icons.Icons.Default.List),
-                    com.dopamine.app.ui.components.NavItem("Kullanıcılar", androidx.compose.material.icons.Icons.Default.Person)
-                ),
-                selectedIndex = selectedTab,
-                onItemSelected = { selectedTab = it }
-            )
-        }
+                .padding(bottom = 32.dp, start = 20.dp, end = 20.dp)
+        )
     } // End of Box
 
     // Rejection Reason Modal Dialog

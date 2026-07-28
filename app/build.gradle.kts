@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.dopamine.app"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.dopamine.app"
