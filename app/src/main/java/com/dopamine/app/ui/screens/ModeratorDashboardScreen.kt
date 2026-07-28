@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -85,14 +86,41 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
     val hazeState = remember { HazeState() }
 
     androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+        
+        // --- Liquid Glass Background Glows ---
+        Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .size(300.dp)
+                    .align(Alignment.TopStart)
+                    .offset(x = (-50).dp, y = (-50).dp)
+                    .background(
+                        androidx.compose.ui.graphics.Brush.radialGradient(
+                            colors = listOf(Color(0xFF00E5FF).copy(alpha = 0.5f), Color.Transparent)
+                        )
+                    )
+            )
+            Box(
+                modifier = Modifier
+                    .size(400.dp)
+                    .align(Alignment.BottomEnd)
+                    .offset(x = 50.dp, y = 50.dp)
+                    .background(
+                        androidx.compose.ui.graphics.Brush.radialGradient(
+                            colors = listOf(Color(0xFF7C4DFF).copy(alpha = 0.4f), Color.Transparent)
+                        )
+                    )
+            )
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .haze(
                     state = hazeState,
-                    backgroundColor = Color.Black,
-                    tint = Color.Black.copy(alpha = 0.2f),
-                    blurRadius = 20.dp
+                    backgroundColor = Color.Transparent,
+                    tint = Color.White.copy(alpha = 0.03f),
+                    blurRadius = 40.dp
                 )
         ) {
         Row(
@@ -154,9 +182,12 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
                 reportCal.get(java.util.Calendar.WEEK_OF_YEAR) == currentCal.get(java.util.Calendar.WEEK_OF_YEAR)
             }
 
-            // SegmentedControl removed
-
-            Spacer(modifier = Modifier.height(16.dp))
+            SegmentedControl(
+                items = listOf("Bekleyenler", "Kullanıcılar"),
+                selectedIndex = selectedTab,
+                onSegmentSelected = { selectedTab = it },
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
             if (selectedTab == 0) {
                 // Tab 1: Submitted Reports

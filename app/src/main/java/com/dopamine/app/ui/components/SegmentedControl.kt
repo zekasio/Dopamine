@@ -3,6 +3,7 @@ package com.dopamine.app.ui.components
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -42,7 +43,8 @@ fun SegmentedControl(
             .fillMaxWidth()
             .height(48.dp)
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.Gray.copy(alpha = 0.15f))
+            .background(Color(0x1AFFFFFF)) // 10% white
+            .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(14.dp)) // 20% white
             .padding(4.dp)
     ) {
         val segmentWidth = maxWidth / items.size
@@ -58,9 +60,10 @@ fun SegmentedControl(
                 .offset(x = indicatorOffset)
                 .width(segmentWidth)
                 .fillMaxHeight()
-                .shadow(2.dp, RoundedCornerShape(10.dp))
+                .shadow(elevation = 15.dp, shape = RoundedCornerShape(10.dp), spotColor = Color.Cyan)
                 .clip(RoundedCornerShape(10.dp))
-                .background(MaterialTheme.colorScheme.surface)
+                .background(Color(0x33FFFFFF)) // 20% white highlight
+                .border(1.dp, Color(0x66FFFFFF), RoundedCornerShape(10.dp)) // 40% white edge
         )
 
         Row(modifier = Modifier.fillMaxWidth()) {
@@ -79,8 +82,8 @@ fun SegmentedControl(
                     Text(
                         text = title,
                         fontSize = 14.sp,
-                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
-                        color = if (isSelected) PrimaryBlue else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
+                        color = if (isSelected) Color.White else Color.White.copy(alpha = 0.6f)
                     )
                 }
             }

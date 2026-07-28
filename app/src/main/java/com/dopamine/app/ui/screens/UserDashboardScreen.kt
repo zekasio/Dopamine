@@ -472,22 +472,5 @@ fun UserDashboardScreen(viewModel: MainViewModel) {
             } // End main else block
         }
         } // End Column
-        // Liquid Glass Bottom Nav
-        androidx.compose.foundation.layout.Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(bottom = 24.dp, start = 24.dp, end = 24.dp)
-                .hazeChild(state = hazeState, shape = androidx.compose.foundation.shape.CircleShape)
-        ) {
-            com.dopamine.app.ui.components.LiquidGlassBottomNav(
-                items = listOf(
-                    com.dopamine.app.ui.components.NavItem("Rapor", androidx.compose.material.icons.Icons.Default.Edit),
-                    com.dopamine.app.ui.components.NavItem("Profil", androidx.compose.material.icons.Icons.Default.Person)
-                ),
-                selectedIndex = selectedTab,
-                onItemSelected = { selectedTab = it }
-            )
-        }
     } // End Box wrapper
 }
