@@ -191,8 +191,10 @@ function App() {
   }
 
   return (
-    <div className="container">
-      <motion.header className="header" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: "easeOut" }}>
+    <>
+      <div className="liquid-bg"></div>
+      <div className="container">
+        <motion.header className="header" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: "easeOut" }}>
         <div>
           <h1>Dopamine Yönetim</h1>
           <p>Merkezi Sistem ve Kullanıcı Kontrol Paneli</p>
@@ -485,6 +487,7 @@ function App() {
         </div>
       </motion.div>
     </div>
+    </>
   )
 }
 
