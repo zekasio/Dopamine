@@ -2,17 +2,17 @@
 
 :root {
   --bg-color: #000000;
-  --surface-color: rgba(20, 20, 20, 0.6);
-  --surface-elevated: rgba(30, 30, 30, 0.8);
-  --primary-blue: #2979FF;
+  --surface-color: rgba(20, 20, 20, 0.25);
+  --surface-elevated: rgba(30, 30, 30, 0.4);
+  --primary-blue: #00E5FF;
   --accent-purple: #7C4DFF;
   --status-success: #00E676;
   --status-warning: #FFAB00;
   --status-error: #FF1744;
   --text-primary: #FFFFFF;
   --text-secondary: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-border-strong: rgba(255, 255, 255, 0.15);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-strong: rgba(255, 255, 255, 0.2);
 }
 
 * {
@@ -24,25 +24,61 @@
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: var(--bg-color);
-  background-image: radial-gradient(circle at 15% 50%, rgba(41, 121, 255, 0.04), transparent 25%),
-                    radial-gradient(circle at 85% 30%, rgba(124, 77, 255, 0.04), transparent 25%);
   color: var(--text-primary);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Animated Background Orbs for Liquid Glass Effect */
+body::before, body::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  z-index: -1;
+  animation: float 20s infinite ease-in-out alternate;
+}
+
+body::before {
+  width: 40vw;
+  height: 40vw;
+  background: radial-gradient(circle, rgba(0, 229, 255, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+  top: -10%;
+  left: -10%;
+}
+
+body::after {
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, rgba(124, 77, 255, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+  bottom: -10%;
+  right: -10%;
+  animation-delay: -10s;
+}
+
+@keyframes float {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(5%, 5%) scale(1.1); }
+  66% { transform: translate(-5%, 10%) scale(0.9); }
+  100% { transform: translate(0, 0) scale(1); }
 }
 
 .container {
   max-width: 1280px;
   margin: 0 auto;
   padding: 3rem 2rem;
+  position: relative;
+  z-index: 1;
 }
 
 /* Typography */
 h1 { 
   font-size: 2.5rem; 
   font-weight: 800; 
-  background: linear-gradient(135deg, #fff 0%, #a5a5a5 100%);
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.7) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: -0.02em;
@@ -71,21 +107,42 @@ p { color: var(--text-secondary); }
   }
 }
 
-/* Cards (Apple Glassmorphism Style) */
-.card {
+/* Cards (Liquid Glassmorphism Style) */
+.card, .glass-panel {
   background-color: var(--surface-color);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid var(--glass-border);
-  border-radius: 28px;
+  border-radius: 32px;
   padding: 1.75rem;
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
 }
 
-.card:hover {
+/* Liquid Shine Effect on Hover */
+.card::before, .glass-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-25deg);
+  transition: all 0.7s ease;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.card:hover::before, .glass-panel:hover::before {
+  left: 200%;
+}
+
+.card:hover, .glass-panel:hover {
   border-color: var(--glass-border-strong);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 12px 48px 0 rgba(0, 229, 255, 0.1);
+  transform: translateY(-4px);
+  background-color: rgba(30, 30, 30, 0.35);
 }
 
 /* Header */
@@ -107,10 +164,10 @@ p { color: var(--text-secondary); }
   color: var(--status-success);
   padding: 0.6rem 1.2rem;
   border-radius: 9999px;
-  border: 1px solid rgba(0, 230, 118, 0.2);
+  border: 1px solid rgba(0, 230, 118, 0.3);
   font-weight: 600;
   font-size: 0.875rem;
-  box-shadow: 0 0 20px rgba(0, 230, 118, 0.05);
+  backdrop-filter: blur(10px);
 }
 
 .pulse {
@@ -127,148 +184,197 @@ p { color: var(--text-secondary); }
   100% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0); }
 }
 
-/* Forms */
+/* Forms (Liquid Glass inputs) */
 .form-group {
   margin-bottom: 1.2rem;
+  position: relative;
+  z-index: 2;
 }
 
 .form-group label {
   display: block;
   font-size: 0.875rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
   color: var(--text-secondary);
+  margin-left: 0.5rem;
 }
 
 .form-control {
   width: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  border: 1px solid var(--glass-border-strong);
-  border-radius: 14px;
-  padding: 0.85rem 1rem;
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 1rem 1.25rem;
   color: var(--text-primary);
   font-family: inherit;
   font-size: 0.95rem;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .form-control:focus {
   outline: none;
   border-color: var(--primary-blue);
-  background-color: rgba(0, 0, 0, 0.8);
-  box-shadow: 0 0 0 4px rgba(41, 121, 255, 0.15);
+  background-color: rgba(0, 229, 255, 0.05);
+  box-shadow: 0 0 0 4px rgba(0, 229, 255, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 select.form-control {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2300E5FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 1em;
+  background-position: right 1.2rem center;
+  background-size: 1.2em;
 }
 
 .btn {
   width: 100%;
-  background: linear-gradient(135deg, var(--primary-blue), var(--accent-purple));
-  color: white;
-  border: none;
+  background: rgba(0, 229, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--primary-blue);
+  border: 1px solid rgba(0, 229, 255, 0.3);
   padding: 1rem;
-  border-radius: 14px;
-  font-weight: 600;
+  border-radius: 20px;
+  font-weight: 700;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 0.5rem;
-  box-shadow: 0 4px 15px rgba(41, 121, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(to right, rgba(0, 229, 255, 0) 0%, rgba(0, 229, 255, 0.2) 50%, rgba(0, 229, 255, 0) 100%);
+  transform: skewX(-25deg);
+  transition: all 0.5s ease;
+  z-index: -1;
+}
+
+.btn:hover::before {
+  left: 100%;
 }
 
 .btn:hover {
-  opacity: 0.95;
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 20px rgba(41, 121, 255, 0.4);
+  background: rgba(0, 229, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 229, 255, 0.25);
+  border-color: rgba(0, 229, 255, 0.6);
 }
 
 .btn:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(1px);
 }
 
 .btn-danger {
   background: rgba(255, 23, 68, 0.1);
   color: var(--status-error);
-  border: 1px solid rgba(255, 23, 68, 0.2);
+  border: 1px solid rgba(255, 23, 68, 0.3);
   padding: 0.6rem 1rem;
   font-size: 0.875rem;
   width: auto;
-  box-shadow: none;
+  border-radius: 16px;
 }
 
 .btn-danger:hover {
   background: rgba(255, 23, 68, 0.2);
-  box-shadow: 0 4px 12px rgba(255, 23, 68, 0.15);
+  border-color: rgba(255, 23, 68, 0.6);
+  box-shadow: 0 6px 20px rgba(255, 23, 68, 0.2);
 }
 
-/* Tables */
+/* Tables - Glass Style */
 .table-container {
   overflow-x: auto;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(10px);
 }
 
 table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
 }
 
 th {
   text-align: left;
-  padding: 1rem;
+  padding: 1.25rem 1rem;
   color: var(--text-secondary);
   font-size: 0.85rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--glass-border);
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--glass-border-strong);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(4px);
 }
 
 td {
   padding: 1.25rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--glass-border);
+  transition: background-color 0.2s ease;
+}
+
+tr:hover td {
+  background-color: rgba(0, 229, 255, 0.03);
+}
+
+tr:last-child td {
+  border-bottom: none;
 }
 
 .badge {
   display: inline-block;
-  padding: 0.35rem 0.85rem;
+  padding: 0.4rem 1rem;
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 700;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  letter-spacing: 0.03em;
 }
 
 .badge-admin {
   background-color: rgba(124, 77, 255, 0.15);
-  color: var(--accent-purple);
-  border: 1px solid rgba(124, 77, 255, 0.3);
+  color: #B388FF;
+  border: 1px solid rgba(124, 77, 255, 0.4);
 }
 
 .badge-user {
-  background-color: var(--surface-elevated);
+  background-color: rgba(255, 255, 255, 0.05);
   color: var(--text-secondary);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--glass-border-strong);
 }
 
 .list-item {
   padding: 1.25rem;
   border-bottom: 1px solid var(--glass-border);
-  transition: background-color 0.2s ease;
+  transition: all 0.3s ease;
+  border-radius: 16px;
+  margin-bottom: 0.5rem;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .list-item:hover {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: rgba(0, 229, 255, 0.05);
+  transform: translateX(4px);
+  border-color: rgba(0, 229, 255, 0.2);
 }
 
 .list-item:last-child {
-  border-bottom: none;
+  margin-bottom: 0;
 }
 
 .flex-between {

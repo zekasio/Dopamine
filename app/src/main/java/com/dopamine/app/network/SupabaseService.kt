@@ -25,6 +25,7 @@ class SupabaseService {
         ignoreUnknownKeys = true
         coerceInputValues = true
         encodeDefaults = true
+        explicitNulls = false
     }
 
     private val client = HttpClient(Android) {
