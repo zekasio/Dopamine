@@ -132,7 +132,7 @@ function App() {
       }
     } else {
       // Add new user
-      userData.id = 'user_' + formData.username + '_' + Math.floor(Math.random() * 1000)
+      userData.id = crypto.randomUUID()
       const { error } = await supabase.from('users').insert([userData])
       if (error) {
         alert('Hata: ' + error.message)

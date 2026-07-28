@@ -67,11 +67,6 @@ import com.dopamine.app.ui.viewmodel.MainViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
-import dev.chrisbanes.haze.hazeChild
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Person
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,19 +77,12 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
     val rejectReason by viewModel.rejectionReasonInput.collectAsState()
 
     var selectedTab by remember { mutableStateOf(0) }
-    val hazeState = remember { HazeState() }
 
-    androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .haze(
-                    state = hazeState,
-                    backgroundColor = Color.Black,
-                    tint = Color.Black.copy(alpha = 0.2f),
-                    blurRadius = 20.dp
-                )
-        ) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -154,7 +142,11 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
                 reportCal.get(java.util.Calendar.WEEK_OF_YEAR) == currentCal.get(java.util.Calendar.WEEK_OF_YEAR)
             }
 
-            // SegmentedControl removed
+            SegmentedControl(
+                items = listOf("Gelen Raporlar (${currentWeekReports.size})", "Dürtme Listesi (${normalUsers.size})"),
+                selectedIndex = selectedTab,
+                onSegmentSelected = { selectedTab = it }
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -260,27 +252,8 @@ fun ModeratorDashboardScreen(viewModel: MainViewModel) {
                     }
                 }
             }
-        } // End of inner else
-        } // End of Column
-
-        // Liquid Glass Bottom Nav
-        androidx.compose.foundation.layout.Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(bottom = 24.dp, start = 24.dp, end = 24.dp)
-                .hazeChild(state = hazeState, shape = androidx.compose.foundation.shape.CircleShape)
-        ) {
-            com.dopamine.app.ui.components.LiquidGlassBottomNav(
-                items = listOf(
-                    com.dopamine.app.ui.components.NavItem("Raporlar", androidx.compose.material.icons.Icons.Default.List),
-                    com.dopamine.app.ui.components.NavItem("Kullanıcılar", androidx.compose.material.icons.Icons.Default.Person)
-                ),
-                selectedIndex = selectedTab,
-                onItemSelected = { selectedTab = it }
-            )
         }
-    } // End of Box
+    }
 
     // Rejection Reason Modal Dialog
     if (isRejectOpen) {
